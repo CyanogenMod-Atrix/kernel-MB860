@@ -121,6 +121,7 @@ static struct platform_device debug_uart = {
 static void __init tegra_setup_debug_uart(void)
 {
 	NvOdmDebugConsole uart = NvOdmQueryDebugConsole();
+	/* NvOdmDebugConsole uart = NvOdmDebugConsole_UartA;*/
 	const struct tegra_pingroup_config *pinmux = NULL;
 	const NvU32 *odm_table;
 	struct clk *c = NULL;
