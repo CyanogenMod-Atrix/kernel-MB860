@@ -420,8 +420,8 @@ void tegra_pinmux_config_tristate_table(const struct tegra_pingroup_config *conf
 		pingroup = config[i].pingroup;
 		if (pingroups[pingroup].tri_reg >= 0) {
 			err = tegra_pinmux_set_tristate(pingroup, tristate);
-			/* printk(KERN_INFO "pICS_%s: pingroup %s setting to tristate %s\n",__func__, pingroup_name(pingroup),
-					tri_name(tristate));*/
+			printk(KERN_INFO "pICS_%s: pingroup %s setting to tristate %s\n",__func__, pingroup_name(pingroup),
+					tri_name(tristate));
 			if (err < 0)
 				pr_err("pinmux: can't set pingroup %s tristate"
 					" to %s: %d\n",	pingroup_name(pingroup),
@@ -437,8 +437,8 @@ void tegra_pinmux_set_vddio_tristate(tegra_vddio_t vddio,
 	for (pg = 0; pg < TEGRA_MAX_PINGROUP; ++pg) {
 		if (pingroups[pg].vddio == vddio &&
 		    pingroups[pg].tri_reg >= 0) {
-			/*printk(KERN_INFO "pICS_%s: pingroup %s setting to tristate %s\n",__func__, pingroup_name(pg),
-					tri_name(tristate));*/
+			printk(KERN_INFO "pICS_%s: pingroup %s setting to tristate %s\n",__func__, pingroup_name(pg),
+					tri_name(tristate));
 			if (tegra_pinmux_set_tristate(pg, tristate)<0)
 				pr_err("pinmux: can't set pingroup %s tristate"
 				       " to %s\n", pingroup_name(pg),
@@ -457,8 +457,8 @@ void tegra_pinmux_config_pullupdown_table(const struct tegra_pingroup_config *co
 	for (i = 0; i < len; i++) {
 		pingroup = config[i].pingroup;
 		if (pingroups[pingroup].pupd_reg >= 0) {
-			/*printk(KERN_INFO "pICS_%s: pingroup %s setting to tristate %s\n",__func__, pingroup_name(pingroup),
-					pupd_name(pupd));*/
+			printk(KERN_INFO "pICS_%s: pingroup %s setting to tristate %s\n",__func__, pingroup_name(pingroup),
+					pupd_name(pupd));
 			err = tegra_pinmux_set_pullupdown(pingroup, pupd);
 			if (err < 0)
 				pr_err("pinmux: can't set pingroup %s pullupdown"
