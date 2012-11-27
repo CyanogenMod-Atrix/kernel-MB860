@@ -937,7 +937,14 @@ void mot_setup_power(void)
 	int error;
 
 	/* CPCAP standby lines connected to CPCAP GPIOs on Etna P1B & Olympus P2 */
-	if ( HWREV_TYPE_IS_FINAL(system_rev) || (HWREV_TYPE_IS_PORTABLE(system_rev) && (HWREV_REV(system_rev))  >= HWREV_REV_2)) {
+	if ( HWREV_TYPE_IS_FINAL(system_rev) ||
+	     (machine_is_etna() &&
+	      HWREV_TYPE_IS_PORTABLE(system_rev) &&
+	       (HWREV_REV(system_rev)  >= HWREV_REV_1B))  ||
+	     (machine_is_olympus() &&
+	       HWREV_TYPE_IS_PORTABLE(system_rev) &&
+	       (HWREV_REV(system_rev)  >= HWREV_REV_2)) ||
+		  machine_is_tegra_daytona() || machine_is_sunfire()) {
 		tegra_cpcap_data.hwcfg[1] |= CPCAP_HWCFG1_STBY_GPIO;
 	}
 
