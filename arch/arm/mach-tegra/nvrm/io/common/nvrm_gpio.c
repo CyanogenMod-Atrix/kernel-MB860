@@ -136,9 +136,10 @@ NvError NvRmGpioAcquirePinHandle(NvRmGpioHandle gpio, NvU32 nr_port,
 	{
 		nr_gpio = nr_port*8 + nr_pin;
 	}
-
+	printk(KERN_INFO "%s: nr_gpio=%i\n",__func__, gpio);
 try_f7:
     ret = gpio_request(nr_gpio, "nvrm_gpio");
+    printk(KERN_INFO "%s: gpio_request(nr_gpio=%i, 'nvrm_gpio') = %i;\n",__func__, nr_gpio, ret);
     if (ret) {
 		if(TEGRA_GPIO_PF7 == nr_gpio && !count_f7)
 		{
@@ -178,6 +179,7 @@ void NvRmGpioReleasePinHandles(NvRmGpioHandle gpio,
 			continue;
 
 		gpio_free(gpio);
+		printk(KERN_INFO "%s: gpio_free(gpio=%i)\n",__func__, gpio);
 		gpio_data[gpio].val = false;
 		gpio_data[gpio].alloc = false;
 	}
@@ -199,6 +201,7 @@ void NvRmGpioReadPins(NvRmGpioHandle gpio, NvRmGpioPinHandle *hpins,
 			continue;
 
 		v = gpio_get_value(gpio) & 0x1;
+		printk(KERN_INFO "%s: gpio_get_value(gpio=%i, v=%i)\n",__func__, gpio, v);
 		states[i] = (v) ? NvRmGpioPinState_High : NvRmGpioPinState_Low;
 	}
 }
@@ -223,6 +226,7 @@ void NvRmGpioWritePins(NvRmGpioHandle gpio, NvRmGpioPinHandle *hpins,
 
 		gpio_data[gpio].val = v ? true : false;
 		gpio_set_value(gpio, v);
+		printk(KERN_INFO "%s: gpio_set_value(gpio=%i, v=%i)\n",__func__, gpio, v);
 	}
 }
 
@@ -242,41 +246,59 @@ NvError NvRmGpioConfigPins(NvRmGpioHandle gpio, NvRmGpioPinHandle *hpins,
 		if (mode == NvRmGpioPinMode_Inactive ||
 		    mode == NvRmGpioPinMode_Function) {
 			tegra_gpio_disable(gpio);
+			printk(KERN_INFO "%s: tegra_gpio_disable(gpio=%i)\n",__func__, gpio);
 		} else {
 			struct irq_chip *chip;
 			int irq = gpio_to_irq(gpio);
-
+			printk(KERN_INFO "%s: irq(=%i) = gpio_to_irq(gpio=%i)\n",__func__, irq, gpio);
 			chip = get_irq_chip(irq);
+			
+			printk(KERN_INFO "%s: chip(=%s) = get_irq_chip(irq=%i)\n",__func__, chip->name, gpio);
+
 			tegra_gpio_enable(gpio);
+			printk(KERN_INFO "%s: tegra_gpio_enable(gpio=%i)\n",__func__, gpio);
 
 			switch (mode) {
 			case NvRmGpioPinMode_InputData:
 				gpio_direction_input(gpio);
+				printk(KERN_INFO "%s: gpio_direction_input(gpio=%i)\n",__func__, gpio);
 				break;
 			case NvRmGpioPinMode_Output:
 				gpio_direction_output(gpio,
 					(gpio_data[gpio].val ? 1 : 0));
+				
+				printk(KERN_INFO "%s: gpio_direction_output(gpio = %i, gpio_data[gpio].val ? 1 : 0 = %i)\n",__func__, gpio, (gpio_data[gpio].val ? 1 : 0));
 				break;
 			case NvRmGpioPinMode_InputInterruptRisingEdge:
 				gpio_direction_input(gpio);
+				printk(KERN_INFO "%s: gpio_direction_input(gpio=%i)\n",__func__, gpio);
 				chip->set_type(irq, IRQ_TYPE_EDGE_RISING);
+				printk(KERN_INFO "%s: chip->set_type(irq = %i, IRQ_TYPE_EDGE_RISING = %i)\n",__func__, gpio, IRQ_TYPE_EDGE_RISING);
 				break;
 			case NvRmGpioPinMode_InputInterruptFallingEdge:
 				gpio_direction_input(gpio);
+				printk(KERN_INFO "%s: gpio_direction_input(gpio=%i)\n",__func__, gpio);
 				chip->set_type(irq, IRQ_TYPE_EDGE_FALLING);
+				printk(KERN_INFO "%s: chip->set_type(irq = %i, IRQ_TYPE_EDGE_FALLING = %i)\n",__func__, gpio, IRQ_TYPE_EDGE_FALLING);
 				break;
 				break;
 			case NvRmGpioPinMode_InputInterruptAny:
 				gpio_direction_input(gpio);
+				printk(KERN_INFO "%s: gpio_direction_input(gpio=%i)\n",__func__, gpio);
 				chip->set_type(irq, IRQ_TYPE_EDGE_BOTH);
+				printk(KERN_INFO "%s: chip->set_type(irq = %i, IRQ_TYPE_EDGE_BOTH = %i)\n",__func__, gpio, IRQ_TYPE_EDGE_BOTH);
 				break;
 			case NvRmGpioPinMode_InputInterruptHigh:
 				gpio_direction_input(gpio);
+				printk(KERN_INFO "%s: gpio_direction_input(gpio=%i)\n",__func__, gpio);
 				chip->set_type(irq, IRQ_TYPE_LEVEL_HIGH);
+				printk(KERN_INFO "%s: chip->set_type(irq = %i, IRQ_TYPE_LEVEL_HIGH = %i)\n",__func__, gpio, IRQ_TYPE_LEVEL_HIGH);
 				break;
 			case NvRmGpioPinMode_InputInterruptLow:
 				gpio_direction_input(gpio);
+				printk(KERN_INFO "%s: gpio_direction_input(gpio=%i)\n",__func__, gpio);
 				chip->set_type(irq, IRQ_TYPE_LEVEL_LOW);
+				printk(KERN_INFO "%s: chip->set_type(irq = %i, IRQ_TYPE_LEVEL_LOW = %i)\n",__func__, gpio, IRQ_TYPE_LEVEL_LOW);
 				break;
 			default:
 				break;
@@ -301,6 +323,7 @@ NvError NvRmGpioGetIrqs(NvRmDeviceHandle rm, NvRmGpioPinHandle *hpins,
 			return NvError_BadParameter;
 
 		irqs[i] = gpio_to_irq(gpio);
+		printk(KERN_INFO "%s: irq(=%i) = gpio_to_irq(gpio=%i)\n",__func__, irqs[i], gpio);
 	}
 
 	return NvSuccess;

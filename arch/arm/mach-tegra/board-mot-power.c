@@ -825,11 +825,16 @@ static int cpcap_usb_connected_probe(struct platform_device *pdev)
 
 	/* Configure CPCAP-AP20 USB Mux to AP20 */
 	data->port = NVODM_PORT('v');
+	printk(KERN_INFO "%s: data->port= %lu\n",__func__, data->port);
 	data->pin = 6;
 	data->h_gpio = NvOdmGpioOpen();
+	printk(KERN_INFO "%s: data->h_gpio%s\n",__func__, data->h_gpio);
 	data->h_pin = NvOdmGpioAcquirePinHandle(data->h_gpio, data->port, data->pin);
+	printk(KERN_INFO "%s: data->h_pin%s\n",__func__, data->h_pin);
 	NvOdmGpioConfig(data->h_gpio, data->h_pin, NvOdmGpioPinMode_Output);
+	printk(KERN_INFO "%s: NvOdmGpioConfig: %u\n",__func__, NvOdmGpioPinMode_Output);
 	NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x1);
+	printk(KERN_INFO "%s: NvOdmGpioSetState (data->h_gpio = %s, data->h_pin = %s , 0x1)\n",__func__, data->h_gpio, data->h_pin);
 
 	platform_set_drvdata(pdev, data);
 
@@ -858,6 +863,7 @@ static int cpcap_usb_connected_remove(struct platform_device *pdev)
 
 	/* Configure CPCAP-AP20 USB Mux to CPCAP */
 	NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x0);
+	printk(KERN_INFO "%s: NvOdmGpioSetState (data->h_gpio = %s, data->h_pin = %s , 0x0)\n",__func__, data->h_gpio, data->h_pin);
 	NvOdmGpioReleasePinHandle(data->h_gpio, data->h_pin);
 	NvOdmGpioClose(data->h_gpio);
 
