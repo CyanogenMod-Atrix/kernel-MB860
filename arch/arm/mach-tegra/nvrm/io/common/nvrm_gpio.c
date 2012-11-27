@@ -139,7 +139,7 @@ NvError NvRmGpioAcquirePinHandle(NvRmGpioHandle gpio, NvU32 nr_port,
 	printk(KERN_INFO "pICS_%s: nr_gpio=%i\n",__func__, nr_gpio);
 try_f7:
     ret = gpio_request(nr_gpio, "nvrm_gpio");
-    printk(KERN_INFO "pICS_%s: gpio_request(nr_gpio=%i, 'nvrm_gpio') = %i;\n",__func__, nr_gpio, ret);
+    printk(KERN_INFO "pICS_%s: gpio_request(nr_gpio=%i, 'nvrm_gpio') => %i;\n",__func__, nr_gpio, ret);
     if (ret) {
 		if(TEGRA_GPIO_PF7 == nr_gpio && !count_f7)
 		{
@@ -201,7 +201,7 @@ void NvRmGpioReadPins(NvRmGpioHandle gpio, NvRmGpioPinHandle *hpins,
 			continue;
 
 		v = gpio_get_value(gpio) & 0x1;
-		printk(KERN_INFO "pICS_%s: gpio_get_value(gpio=%i, v=%i)\n",__func__, gpio, v);
+		printk(KERN_INFO "pICS_%s: gpio_get_value(gpio=%i) => v = %i)\n",__func__, gpio, v);
 		states[i] = (v) ? NvRmGpioPinState_High : NvRmGpioPinState_Low;
 	}
 }
@@ -250,10 +250,10 @@ NvError NvRmGpioConfigPins(NvRmGpioHandle gpio, NvRmGpioPinHandle *hpins,
 		} else {
 			struct irq_chip *chip;
 			int irq = gpio_to_irq(gpio);
-			printk(KERN_INFO "pICS_%s: irq(=%i) = gpio_to_irq(gpio=%i)\n",__func__, irq, gpio);
+			printk(KERN_INFO "pICS_%s: (irq = %i) <= gpio_to_irq(gpio=%i)\n",__func__, irq, gpio);
 			chip = get_irq_chip(irq);
 			
-			printk(KERN_INFO "pICS_%s: chip(=%s) = get_irq_chip(irq=%i)\n",__func__, chip->name, gpio);
+			printk(KERN_INFO "pICS_%s: (chip=%s) <= get_irq_chip(irq=%i)\n",__func__, chip->name, irq);
 
 			tegra_gpio_enable(gpio);
 			printk(KERN_INFO "pICS_%s: tegra_gpio_enable(gpio=%i)\n",__func__, gpio);
@@ -323,7 +323,7 @@ NvError NvRmGpioGetIrqs(NvRmDeviceHandle rm, NvRmGpioPinHandle *hpins,
 			return NvError_BadParameter;
 
 		irqs[i] = gpio_to_irq(gpio);
-		printk(KERN_INFO "pICS_%s: irq(=%i) = gpio_to_irq(gpio=%i)\n",__func__, irqs[i], gpio);
+		printk(KERN_INFO "pICS_%s: (irq=%i) <= gpio_to_irq(gpio=%i)\n",__func__, irqs[i], gpio);
 	}
 
 	return NvSuccess;

@@ -150,7 +150,7 @@ static void __init tegra_setup_debug_uart(void)
 		debug_uart_platform[0].mapbase = TEGRA_UARTA_BASE;
 		debug_uart_platform[0].irq = INT_UARTA;
 	} else if (uart == NvOdmDebugConsole_UartB) {
-		printk(KERN_INFO "pICS_%s: pinmux = tegra_pinmux_get('tegra_uart.1', odm_nr, &nr_pins) = \n",__func__);
+		printk(KERN_INFO "pICS_%s: pinmux = tegra_pinmux_get('tegra_uart.1', odm_nr, &nr_pins)\n",__func__);
 		pinmux = tegra_pinmux_get("tegra_uart.1", odm_nr, &nr_pins);
 		c = clk_get_sys("uart.1", NULL);
 		printk(KERN_INFO "pICS_%s: clk_get_sys('uart.1', NULL)\n",__func__);
@@ -158,7 +158,7 @@ static void __init tegra_setup_debug_uart(void)
 		debug_uart_platform[0].mapbase = TEGRA_UARTB_BASE;
 		debug_uart_platform[0].irq = INT_UARTB;
 	} else if (uart == NvOdmDebugConsole_UartC) {
-		printk(KERN_INFO "pICS_%s: pinmux = tegra_pinmux_get('tegra_uart.2', odm_nr, &nr_pins) = \n",__func__);
+		printk(KERN_INFO "pICS_%s: pinmux = tegra_pinmux_get('tegra_uart.2', odm_nr, &nr_pins)\n",__func__);
 		pinmux = tegra_pinmux_get("tegra_uart.2", odm_nr, &nr_pins);
 		c = clk_get_sys("uart.2", NULL);
 		printk(KERN_INFO "pICS_%s: clk_get_sys('uart.2', NULL)\n",__func__);
@@ -166,7 +166,7 @@ static void __init tegra_setup_debug_uart(void)
 		debug_uart_platform[0].mapbase = TEGRA_UARTC_BASE;
 		debug_uart_platform[0].irq = INT_UARTC;
 	} else if (uart == NvOdmDebugConsole_UartD) {
-		printk(KERN_INFO "pICS_%s: pinmux = tegra_pinmux_get('tegra_uart.3', odm_nr, &nr_pins) = \n",__func__);
+		printk(KERN_INFO "pICS_%s: pinmux = tegra_pinmux_get('tegra_uart.3', odm_nr, &nr_pins)\n",__func__);
 		pinmux = tegra_pinmux_get("tegra_uart.3", odm_nr, &nr_pins);
 		c = clk_get_sys("uart.3", NULL);
 		printk(KERN_INFO "pICS_%s: clk_get_sys('uart.3', NULL)\n",__func__);
@@ -174,7 +174,7 @@ static void __init tegra_setup_debug_uart(void)
 		debug_uart_platform[0].mapbase = TEGRA_UARTD_BASE;
 		debug_uart_platform[0].irq = INT_UARTD;
 	} else if (uart == NvOdmDebugConsole_UartE) {
-		printk(KERN_INFO "pICS_%s: pinmux = tegra_pinmux_get('tegra_uart.4', odm_nr, &nr_pins) = \n",__func__);
+		printk(KERN_INFO "pICS_%s: pinmux = tegra_pinmux_get('tegra_uart.4', odm_nr, &nr_pins)\n",__func__);
 		pinmux = tegra_pinmux_get("tegra_uart.4", odm_nr, &nr_pins);
 		c = clk_get_sys("uart.4", NULL);
 		printk(KERN_INFO "pICS_%s: clk_get_sys('uart.4', NULL)\n",__func__);

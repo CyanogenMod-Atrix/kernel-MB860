@@ -815,29 +815,6 @@ static const int gpio_pin_pingroup[] = {
 	gpio_pingroup(BB, 5, DTE)
 };
 
-const struct tegra_pingroup_config *tegra_pinmux_get(const char *dev_id,
-	int config, int *len)
-{
-	unsigned int i;
-
-	for (i=0; i<ARRAY_SIZE(module_list); i++) {
-		if (!strncmp(dev_id, module_list[i].dev_id,
-		    strlen(module_list[i].dev_id))) {
-			 printk(KERN_INFO "pICS_%s: dev_id = %s, config = %i, len = %i\n ",__func__, dev_id, config, len);
-			return module_list[i].pin_func(config, len);
-		}
-	}
-	return NULL;
-}
-
-int gpio_get_pinmux_group(int gpio_nr)
-{
-	WARN_ON(gpio_nr >= ARRAY_SIZE(gpio_pin_pingroup) || gpio_nr < 0);
-	if (gpio_nr >= ARRAY_SIZE(gpio_pin_pingroup) || gpio_nr < 0)
-		return -EINVAL;
-	return gpio_pin_pingroup[gpio_nr];
-}
-
 static const struct tegra_pingroup_desc pingroups[TEGRA_MAX_PINGROUP] = {
 	PINGROUP(ATA,   NAND,  IDE,       NAND,      GMI,       RSVD,          IDE,       0x14, 0,  0x80, 24, 0xA0, 0),
 	PINGROUP(ATB,   NAND,  IDE,       NAND,      GMI,       SDIO4,         IDE,       0x14, 1,  0x80, 16, 0xA0, 2),
@@ -957,6 +934,125 @@ static const struct tegra_pingroup_desc pingroups[TEGRA_MAX_PINGROUP] = {
 	PINGROUP(XM2C,  DDR,   RSVD,      RSVD,      RSVD,      RSVD,          RSVD,      -1,   -1, -1,   -1, 0xA8, 30),
 	PINGROUP(XM2D,  DDR,   RSVD,      RSVD,      RSVD,      RSVD,          RSVD,      -1,   -1, -1,   -1, 0xA8, 28),
 };
+
+static char *tegra_mux_names[TEGRA_MAX_MUX] = {
+	[TEGRA_MUX_AHB_CLK] = "AHB_CLK",
+	[TEGRA_MUX_APB_CLK] = "APB_CLK",
+	[TEGRA_MUX_AUDIO_SYNC] = "AUDIO_SYNC",
+	[TEGRA_MUX_CRT] = "CRT",
+	[TEGRA_MUX_DAP1] = "DAP1",
+	[TEGRA_MUX_DAP2] = "DAP2",
+	[TEGRA_MUX_DAP3] = "DAP3",
+	[TEGRA_MUX_DAP4] = "DAP4",
+	[TEGRA_MUX_DAP5] = "DAP5",
+	[TEGRA_MUX_DISPLAYA] = "DISPLAYA",
+	[TEGRA_MUX_DISPLAYB] = "DISPLAYB",
+	[TEGRA_MUX_EMC_TEST0_DLL] = "EMC_TEST0_DLL",
+	[TEGRA_MUX_EMC_TEST1_DLL] = "EMC_TEST1_DLL",
+	[TEGRA_MUX_GMI] = "GMI",
+	[TEGRA_MUX_GMI_INT] = "GMI_INT",
+	[TEGRA_MUX_HDMI] = "HDMI",
+	[TEGRA_MUX_I2C] = "I2C",
+	[TEGRA_MUX_I2C2] = "I2C2",
+	[TEGRA_MUX_I2C3] = "I2C3",
+	[TEGRA_MUX_IDE] = "IDE",
+	[TEGRA_MUX_IRDA] = "IRDA",
+	[TEGRA_MUX_KBC] = "KBC",
+	[TEGRA_MUX_MIO] = "MIO",
+	[TEGRA_MUX_MIPI_HS] = "MIPI_HS",
+	[TEGRA_MUX_NAND] = "NAND",
+	[TEGRA_MUX_OSC] = "OSC",
+	[TEGRA_MUX_OWR] = "OWR",
+	[TEGRA_MUX_PCIE] = "PCIE",
+	[TEGRA_MUX_PLLA_OUT] = "PLLA_OUT",
+	[TEGRA_MUX_PLLC_OUT1] = "PLLC_OUT1",
+	[TEGRA_MUX_PLLM_OUT1] = "PLLM_OUT1",
+	[TEGRA_MUX_PLLP_OUT2] = "PLLP_OUT2",
+	[TEGRA_MUX_PLLP_OUT3] = "PLLP_OUT3",
+	[TEGRA_MUX_PLLP_OUT4] = "PLLP_OUT4",
+	[TEGRA_MUX_PWM] = "PWM",
+	[TEGRA_MUX_PWR_INTR] = "PWR_INTR",
+	[TEGRA_MUX_PWR_ON] = "PWR_ON",
+	[TEGRA_MUX_RTCK] = "RTCK",
+	[TEGRA_MUX_SDIO1] = "SDIO1",
+	[TEGRA_MUX_SDIO2] = "SDIO2",
+	[TEGRA_MUX_SDIO3] = "SDIO3",
+	[TEGRA_MUX_SDIO4] = "SDIO4",
+	[TEGRA_MUX_SFLASH] = "SFLASH",
+	[TEGRA_MUX_SPDIF] = "SPDIF",
+	[TEGRA_MUX_SPI1] = "SPI1",
+	[TEGRA_MUX_SPI2] = "SPI2",
+	[TEGRA_MUX_SPI2_ALT] = "SPI2_ALT",
+	[TEGRA_MUX_SPI3] = "SPI3",
+	[TEGRA_MUX_SPI4] = "SPI4",
+	[TEGRA_MUX_TRACE] = "TRACE",
+	[TEGRA_MUX_TWC] = "TWC",
+	[TEGRA_MUX_UARTA] = "UARTA",
+	[TEGRA_MUX_UARTB] = "UARTB",
+	[TEGRA_MUX_UARTC] = "UARTC",
+	[TEGRA_MUX_UARTD] = "UARTD",
+	[TEGRA_MUX_UARTE] = "UARTE",
+	[TEGRA_MUX_ULPI] = "ULPI",
+	[TEGRA_MUX_VI] = "VI",
+	[TEGRA_MUX_VI_SENSOR_CLK] = "VI_SENSOR_CLK",
+	[TEGRA_MUX_XIO] = "XIO",
+};
+
+static const char *pingroup_name(tegra_pingroup_t pg)
+{
+	if (pg < 0 || pg >=  TEGRA_MAX_PINGROUP)
+		return "<UNKNOWN>";
+
+	return pingroups[pg].name;
+}
+
+static const char *func_name(tegra_mux_func_t func)
+{
+	if (func == TEGRA_MUX_RSVD1)
+		return "RSVD1";
+
+	if (func == TEGRA_MUX_RSVD2)
+		return "RSVD2";
+
+	if (func == TEGRA_MUX_RSVD3)
+		return "RSVD3";
+
+	if (func == TEGRA_MUX_RSVD4)
+		return "RSVD4";
+
+	if (func == TEGRA_MUX_NONE)
+		return "NONE";
+
+	if (func < 0 || func >=  TEGRA_MAX_MUX)
+		return "<UNKNOWN>";
+
+	return tegra_mux_names[func];
+}
+
+const struct tegra_pingroup_config *tegra_pinmux_get(const char *dev_id,
+	int config, int *len)
+{
+	unsigned int i;
+
+	for (i=0; i<ARRAY_SIZE(module_list); i++) {
+		if (!strncmp(dev_id, module_list[i].dev_id,
+		    strlen(module_list[i].dev_id))) {
+			 printk(KERN_INFO "pICS_%s: dev_id = %s, config = %i, len = %u\n ",__func__, dev_id, config, len);
+			 printk(KERN_INFO "pICS_%s: returns = %s on %s",__func__, pingroup_name(module_list[i].pin_func(config, len)->pingroup), func_name(module_list[i].pin_func(config, len)->func));
+			return module_list[i].pin_func(config, len);
+		}
+	}
+	return NULL;
+}
+
+int gpio_get_pinmux_group(int gpio_nr)
+{
+	WARN_ON(gpio_nr >= ARRAY_SIZE(gpio_pin_pingroup) || gpio_nr < 0);
+	if (gpio_nr >= ARRAY_SIZE(gpio_pin_pingroup) || gpio_nr < 0)
+		return -EINVAL;
+	printk(KERN_INFO "pICS_%s: (gpio_nr = %i) => %s\n ",__func__, gpio_nr, pingroup_name(gpio_pin_pingroup[gpio_nr]));
+	return gpio_pin_pingroup[gpio_nr];
+}
 
 const struct tegra_pingroup_desc* tegra_pinmux_get_pingroups(void) {
 	return pingroups;
