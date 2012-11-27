@@ -136,7 +136,7 @@ NvError NvRmGpioAcquirePinHandle(NvRmGpioHandle gpio, NvU32 nr_port,
 	{
 		nr_gpio = nr_port*8 + nr_pin;
 	}
-	printk(KERN_INFO "%s: nr_gpio=%i\n",__func__, gpio);
+	printk(KERN_INFO "%s: nr_gpio=%i\n",__func__, nr_gpio);
 try_f7:
     ret = gpio_request(nr_gpio, "nvrm_gpio");
     printk(KERN_INFO "%s: gpio_request(nr_gpio=%i, 'nvrm_gpio') = %i;\n",__func__, nr_gpio, ret);
