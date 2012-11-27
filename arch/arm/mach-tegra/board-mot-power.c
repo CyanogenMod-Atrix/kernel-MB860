@@ -825,16 +825,16 @@ static int cpcap_usb_connected_probe(struct platform_device *pdev)
 
 	/* Configure CPCAP-AP20 USB Mux to AP20 */
 	data->port = NVODM_PORT('v');
-	printk(KERN_INFO "%s: data->port = NVODM_PORT('v') = %lu\n",__func__, data->port);
+	printk(KERN_INFO "pICS_%s: data->port = NVODM_PORT('v') = %lu\n",__func__, data->port);
 	data->pin = 6;
 	data->h_gpio = NvOdmGpioOpen();
-	printk(KERN_INFO "%s: data->h_gpio = NvOdmGpioOpen()\n",__func__);
+	printk(KERN_INFO "pICS_%s: data->h_gpio = NvOdmGpioOpen()\n",__func__);
 	data->h_pin = NvOdmGpioAcquirePinHandle(data->h_gpio, data->port, data->pin);
-	printk(KERN_INFO "%s: data->h_pin = NvOdmGpioAcquirePinHandle(data->h_gpio, data->port, data->pin)\n",__func__);
+	printk(KERN_INFO "pICS_%s: data->h_pin = NvOdmGpioAcquirePinHandle(data->h_gpio, data->port, data->pin)\n",__func__);
 	NvOdmGpioConfig(data->h_gpio, data->h_pin, NvOdmGpioPinMode_Output);
-	printk(KERN_INFO "%s: NvOdmGpioConfig(data->h_gpio, data->h_pin, NvOdmGpioPinMode_Output)\n",__func__);
+	printk(KERN_INFO "pICS_%s: NvOdmGpioConfig(data->h_gpio, data->h_pin, NvOdmGpioPinMode_Output)\n",__func__);
 	NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x1);
-	printk(KERN_INFO "%s: NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x1)\n",__func__);
+	printk(KERN_INFO "pICS_%s: NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x1)\n",__func__);
 
 	platform_set_drvdata(pdev, data);
 
@@ -863,11 +863,11 @@ static int cpcap_usb_connected_remove(struct platform_device *pdev)
 
 	/* Configure CPCAP-AP20 USB Mux to CPCAP */
 	NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x0);
-	printk(KERN_INFO "%s: NvOdmGpioSetState (data->h_gpio, data->h_pin, 0x0)\n",__func__);
+	printk(KERN_INFO "pICS_%s: NvOdmGpioSetState (data->h_gpio, data->h_pin, 0x0)\n",__func__);
 	NvOdmGpioReleasePinHandle(data->h_gpio, data->h_pin);
-	printk(KERN_INFO "%s: NvOdmGpioReleasePinHandle(data->h_gpio, data->h_pin)\n",__func__);
+	printk(KERN_INFO "pICS_%s: NvOdmGpioReleasePinHandle(data->h_gpio, data->h_pin)\n",__func__);
 	NvOdmGpioClose(data->h_gpio);
-	printk(KERN_INFO "%s: NvOdmGpioClose(data->h_gpio)\n",__func__);
+	printk(KERN_INFO "pICS_%s: NvOdmGpioClose(data->h_gpio)\n",__func__);
 
 	if((data->accy == CPCAP_ACCY_USB) || (data->accy == CPCAP_ACCY_FACTORY))
 		android_usb_set_connected(0, data->accy);
