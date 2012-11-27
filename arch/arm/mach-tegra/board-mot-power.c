@@ -825,16 +825,16 @@ static int cpcap_usb_connected_probe(struct platform_device *pdev)
 
 	/* Configure CPCAP-AP20 USB Mux to AP20 */
 	data->port = NVODM_PORT('v');
-	printk(KERN_INFO "%s: data->port= %lu\n",__func__, data->port);
+	printk(KERN_INFO "%s: data->port = NVODM_PORT('v') = %lu\n",__func__, data->port);
 	data->pin = 6;
 	data->h_gpio = NvOdmGpioOpen();
-	printk(KERN_INFO "%s: data->h_gpio%s\n",__func__, data->h_gpio);
+	printk(KERN_INFO "%s: data->h_gpio = NvOdmGpioOpen()\n",__func__);
 	data->h_pin = NvOdmGpioAcquirePinHandle(data->h_gpio, data->port, data->pin);
-	printk(KERN_INFO "%s: data->h_pin%s\n",__func__, data->h_pin);
+	printk(KERN_INFO "%s: data->h_pin = NvOdmGpioAcquirePinHandle(data->h_gpio, data->port, data->pin)\n",__func__);
 	NvOdmGpioConfig(data->h_gpio, data->h_pin, NvOdmGpioPinMode_Output);
-	printk(KERN_INFO "%s: NvOdmGpioConfig: %u\n",__func__, NvOdmGpioPinMode_Output);
+	printk(KERN_INFO "%s: NvOdmGpioConfig(data->h_gpio, data->h_pin, NvOdmGpioPinMode_Output)\n",__func__);
 	NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x1);
-	printk(KERN_INFO "%s: NvOdmGpioSetState (data->h_gpio = %s, data->h_pin = %s , 0x1)\n",__func__, data->h_gpio, data->h_pin);
+	printk(KERN_INFO "%s: NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x1)\n",__func__);
 
 	platform_set_drvdata(pdev, data);
 
@@ -863,9 +863,11 @@ static int cpcap_usb_connected_remove(struct platform_device *pdev)
 
 	/* Configure CPCAP-AP20 USB Mux to CPCAP */
 	NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x0);
-	printk(KERN_INFO "%s: NvOdmGpioSetState (data->h_gpio = %s, data->h_pin = %s , 0x0)\n",__func__, data->h_gpio, data->h_pin);
+	printk(KERN_INFO "%s: NvOdmGpioSetState (data->h_gpio, data->h_pin, 0x0)\n",__func__);
 	NvOdmGpioReleasePinHandle(data->h_gpio, data->h_pin);
+	printk(KERN_INFO "%s: NvOdmGpioReleasePinHandle(data->h_gpio, data->h_pin)\n",__func__);
 	NvOdmGpioClose(data->h_gpio);
+	printk(KERN_INFO "%s: NvOdmGpioClose(data->h_gpio)\n",__func__);
 
 	if((data->accy == CPCAP_ACCY_USB) || (data->accy == CPCAP_ACCY_FACTORY))
 		android_usb_set_connected(0, data->accy);
@@ -935,8 +937,7 @@ void mot_setup_power(void)
 	int error;
 
 	/* CPCAP standby lines connected to CPCAP GPIOs on Etna P1B & Olympus P2 */
-	if ( HWREV_TYPE_IS_FINAL(system_rev) ||
-	     HWREV_TYPE_IS_PORTABLE(system_rev) && (HWREV_REV(system_rev)  >= HWREV_REV_2)) {
+	if ( HWREV_TYPE_IS_FINAL(system_rev) || (HWREV_TYPE_IS_PORTABLE(system_rev) && (HWREV_REV(system_rev))  >= HWREV_REV_2)) {
 		tegra_cpcap_data.hwcfg[1] |= CPCAP_HWCFG1_STBY_GPIO;
 	}
 
