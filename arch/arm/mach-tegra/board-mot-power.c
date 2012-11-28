@@ -939,7 +939,7 @@ void mot_setup_power(void)
 	printk(KERN_INFO "pICS_%s: system_rev = %lu\n",__func__, system_rev);
 	printk(KERN_INFO "pICS_%s: HWREV_TYPE_IS_FINAL = %s\n",__func__, ((HWREV_TYPE_IS_FINAL(system_rev))?"true":"false"));
 	printk(KERN_INFO "pICS_%s: HWREV_TYPE_IS_PORTABLE = %s\n",__func__, ((HWREV_TYPE_IS_PORTABLE(system_rev))?"true":"false"));
-	printk(KERN_INFO "pICS_%s: HWREV = %s\n",__func__, ((HWREV_REV(system_rev))?"true":"false"));
+	printk(KERN_INFO "pICS_%s: HWREV = %s\n",__func__, HWREV_REV(system_rev));
 
 	/* CPCAP standby lines connected to CPCAP GPIOs on Etna P1B & Olympus P2 */
 	if ( HWREV_TYPE_IS_FINAL(system_rev) ||
