@@ -1038,7 +1038,7 @@ const struct tegra_pingroup_config *tegra_pinmux_get(const char *dev_id,
 		if (!strncmp(dev_id, module_list[i].dev_id,
 		    strlen(module_list[i].dev_id))) {
 			 printk(KERN_INFO "pICS_%s: dev_id = %s, config = %i, len = %i\n ",__func__, dev_id, config, *len);
-			/* printk(KERN_INFO "pICS_%s: returns = %s on %s",__func__, pingroup_name(module_list[i].pin_func(config, len)->pingroup), func_name(module_list[i].pin_func(config, len)->func));*/
+			 printk(KERN_INFO "pICS_%s: returns = %s (on TODO)",__func__, pingroup_name(module_list[i].pin_func(config, len)->pingroup) /*, func_name(module_list[i].pin_func(config, len)->func)*/);
 			return module_list[i].pin_func(config, len);
 		}
 	}
