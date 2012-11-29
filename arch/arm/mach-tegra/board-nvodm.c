@@ -399,51 +399,67 @@ static void __init tegra_setup_sdhci(void) {
 	if ( (HWREV_TYPE_IS_FINAL(system_rev) || (HWREV_TYPE_IS_PORTABLE(system_rev) && (HWREV_REV(system_rev) >= HWREV_REV_3)))) {
 		tegra_sdhci_platform[2].regulator_str = (char *)tegra_sdio_ext_reg_str;
 	}
-
+	printk(KERN_INFO "pICS_%s: NvOdmQueryClockLimits",__func__);
 	NvOdmQueryClockLimits(NvOdmIoModule_Sdio, &clock_limits, &clock_count);
+	printk(KERN_INFO "pICS_%s: NvOdmQueryPinMux",__func__);
 	NvOdmQueryPinMux(NvOdmIoModule_Sdio, &pinmux, &nr_pinmux);
 
 	for (i=0; i<ARRAY_SIZE(tegra_sdhci_platform); i++) {
+		printk(KERN_INFO "pICS_%s: tegra_sdhci device %d ",__func__, i);
 		const NvOdmQuerySdioInterfaceProperty *prop;
 		prop = NvOdmQueryGetSdioInterfaceProperty(i);
 		if (!prop || prop->usage==NvOdmQuerySdioSlotUsage_unused)
 			continue;
-		if (prop->usage==NvOdmQuerySdioSlotUsage_Boot)
-			tegra_sdhci_boot_device = i;
-
+		if (prop->usage==NvOdmQuerySdioSlotUsage_Boot) {
+			printk(KERN_INFO "pICS_%s: tegra_sdhci_boot_device = %d ",__func__, i);
+			tegra_sdhci_boot_device = i;	
+		}
 		plat = &tegra_sdhci_platform[i];
 		gpio = NvOdmQueryGpioPinMap(NvOdmGpioPinGroup_Sdio,
 			i, &gpio_count);
-
 		plat->is_removable = prop->IsCardRemovable;
+		printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] is_removable = %d ",__func__, i, plat->is_removable);
 		plat->is_always_on = prop->AlwaysON;
+		printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] is_always_on = %d ",__func__, i, plat->is_always_on);
 		if (!gpio)
 			gpio_count = 0;
 		switch (gpio_count) {
 		case 2:
 			plat->gpio_nr_wp = 8*gpio[1].Port + gpio[1].Pin;
+			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] wp_gpio = %d ",__func__, i, plat->gpio_nr_wp);
 			plat->gpio_nr_cd = 8*gpio[0].Port + gpio[0].Pin;
+			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] cd_gpio = %d ",__func__, i, plat->gpio_nr_cd);
 			plat->gpio_polarity_wp = active_high(&gpio[1]);
+			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] gpio_polarity_wp = %d ",__func__, i, plat->gpio_polarity_wp);
 			plat->gpio_polarity_cd = active_high(&gpio[0]);
+			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] gpio_polarity_cd = %d ",__func__, i, plat->gpio_polarity_cd);
 			break;
 		case 1:
 			plat->gpio_nr_wp = -1;
+			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] wp_gpio = %d ",__func__, i, plat->gpio_nr_wp);
 			plat->gpio_nr_cd = 8*gpio[0].Port + gpio[0].Pin;
+			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] cd_gpio = %d ",__func__, i, plat->gpio_nr_cd);
 			plat->gpio_polarity_cd = active_high(&gpio[0]);
+			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] gpio_polarity_cd = %d ",__func__, i, plat->gpio_polarity_cd);
 			break;
 		case 0:
 			plat->gpio_nr_wp = -1;
+			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] wp_gpio = %d ",__func__, i, plat->gpio_nr_wp);
 			plat->gpio_nr_cd = -1;
+			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] cd_gpio = %d ",__func__, i, plat->gpio_nr_cd);
 			break;
 		}
 
 		if (NvRmGetModuleInterfaceCapabilities(s_hRmGlobal,
 			NVRM_MODULE_ID(NvRmModuleID_Sdio, i),
-			sizeof(caps), &caps)==NvSuccess)
+			sizeof(caps), &caps)==NvSuccess) {
 			plat->bus_width = caps.MmcInterfaceWidth;
-
-		if (clock_limits && i<clock_count)
+			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] bus_width = %d ",__func__, i, plat->bus_width);	
+		}
+		if (clock_limits && i<clock_count) {
 			plat->max_clk = clock_limits[i] * 1000;
+			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] max_clk = %lu ",__func__, i, plat->max_clk);
+		}
 
 		if (pinmux && i<nr_pinmux) {
 			char name[20];
@@ -462,6 +478,7 @@ static void __init tegra_setup_sdhci(void) {
 			if (strcmp("mbr", tegra_nand_plat.parts[i].name))
 				continue;
 			plat->offset = tegra_nand_plat.parts[i].offset;
+			printk(KERN_INFO "pICS_%s: tegra_sdhci_boot_device plat->offset = 0x%lx ",__func__, plat->offset);
 		}
 #endif
 		platform_device_register(&tegra_sdhci_devices[tegra_sdhci_boot_device]);
@@ -591,13 +608,17 @@ static void __init tegra_setup_hsuart(void)
 
 		plat = &tegra_uart_platform[i];
 
+		printk(KERN_INFO "pICS_%s: tegra_uart[%d]",__func__, i);
 		snprintf(name, sizeof(name), "%s.%d",
 			 tegra_uart[i].name, tegra_uart[i].id);
 
 		if (i < odm_nr) {
 			plat->pinmux = tegra_pinmux_get(name,
 				odm_table[i], &plat->nr_pins);
+			printk(KERN_INFO "pICS_%s: tegra_uart[%d] pinmux = ^^^",__func__, i);
+			
 		} else {
+			printk(KERN_INFO "pICS_%s: tegra_uart[%d] pinmux = NULL, nr_pins = 0",__func__, i);
 			plat->pinmux = NULL;
 			plat->nr_pins = 0;
 		}
@@ -739,7 +760,7 @@ static void __init tegra_setup_hcd(void)
 	for (i=0; i<ARRAY_SIZE(tegra_hcd_platform); i++) {
 		const NvOdmUsbProperty *p;
 		struct tegra_hcd_platform_data *plat = &tegra_hcd_platform[i];
-
+		printk(KERN_INFO "pICS_%s: tegra_hcd_platform[%d] NvOdmQueryGetUsbProperty",__func__, i);
 		p = NvOdmQueryGetUsbProperty(NvOdmIoModule_Usb, i);
 
 		if ((p->UsbMode == NvOdmUsbModeType_Device) ||
@@ -747,6 +768,7 @@ static void __init tegra_setup_hcd(void)
 			continue;
 
 		plat->otg_mode = (p->UsbMode == NvOdmUsbModeType_OTG);
+		printk(KERN_INFO "pICS_%s: tegra_hcd_platform[%d] otg_mode  = %d",__func__, i, plat->otg_mode);
 		if (plat->otg_mode && !otg_is_okay(i)) {
 			pr_err("%s: OTG not enabled in kernel for USB "
 			       "controller %d, but ODM kit specifes OTG\n",
@@ -772,23 +794,28 @@ static void __init tegra_setup_hcd(void)
 				continue;
 			}
 			plat->id_detect = ID_PIN_GPIO;
+			printk(KERN_INFO "pICS_%s: tegra_hcd_platform[%d] id_detect = %u",__func__, i, plat->id_detect);
 			gpio += NvOdmGpioPin_UsbCableId;
 			plat->gpio_nr = gpio->Port*8 + gpio->Pin;
+			printk(KERN_INFO "pICS_%s: tegra_hcd_platform[%d] gpio_nr = %u",__func__, i, plat->gpio_nr);
 		} else if (p->IdPinDetectionType == NvOdmUsbIdPinType_CableId) {
 			plat->id_detect = ID_PIN_CABLE_ID;
+			printk(KERN_INFO "pICS_%s: tegra_hcd_platform[%d] id_detect = %u",__func__, i, plat->id_detect);
 		}
 
 		/* Some connected devices such as Wrigley expect VBUS to stay
 		 * on even when the AP20 is in LP0. */
-		if (p->vbus_regulator != NULL)
+		if (p->vbus_regulator != NULL) {
 			plat->regulator_str = p->vbus_regulator;
-
+			printk(KERN_INFO "pICS_%s: tegra_hcd_platform[%d] regulator_str = %s",__func__, i, plat->regulator_str);
+		}
 		/* Enable fast wakeup by default to use resume signaling on
 		 * wakeup from LP0 instead of a bus reset.
 		 */
-		if (p->UsbMode == NvOdmUsbModeType_Host)
+		if (p->UsbMode == NvOdmUsbModeType_Host) {
 			plat->fast_wakeup = 1;
-
+			printk(KERN_INFO "pICS_%s: tegra_hcd_platform[%d] fast_wakeup = %d",__func__, i, plat->fast_wakeup);
+		}
 		platform_device_register(&tegra_hcd[i]);
 	}
 }
@@ -1756,6 +1783,7 @@ postcore_initcall(tegra_setup_data);
 
 void __init tegra_setup_nvodm(bool standard_i2c, bool standard_spi)
 {
+	printk(KERN_INFO "pICS_%s: NvRmGpioOpen(s_hRmGlobal, &s_hGpioGlobal); \n",__func__);
 	NvRmGpioOpen(s_hRmGlobal, &s_hGpioGlobal);
 	tegra_setup_debug_uart();
 	tegra_setup_hcd();
