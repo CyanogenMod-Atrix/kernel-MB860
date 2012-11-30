@@ -285,4 +285,8 @@ config OC_1300
 	depends on ARCH_TEGRA && !STOCK_VOLTAGE
 	default n
 
+config MOT_SERIAL_JACK
+	bool "Enable serial output over Jack"
+	default n
+
 endif
