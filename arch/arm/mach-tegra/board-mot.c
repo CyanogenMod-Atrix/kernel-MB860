@@ -442,6 +442,7 @@ static void __init tegra_mot_init(void)
 #ifdef CONFIG_APANIC_RAM
 	apanic_ram_init();
 #endif
+
 #ifdef CONFIG_APANIC_MMC
 	apanic_mmc_init();
 #endif
@@ -449,7 +450,7 @@ static void __init tegra_mot_init(void)
 	mot_setup_power();
 	mot_setup_lights(&tegra_i2c_bus0_board_info[BACKLIGHT_DEV]);
 	mot_setup_touch(&tegra_i2c_bus0_board_info[TOUCHSCREEN_DEV]);
-
+#if 0
 	mot_sec_init();
 	mot_tcmd_init();
 
@@ -510,7 +511,7 @@ static void __init tegra_mot_init(void)
 	gpio_request(TEGRA_GPIO_PD4, "spdif_enable");
 	gpio_direction_output(TEGRA_GPIO_PD4, 0);
 	gpio_export(TEGRA_GPIO_PD4, false);
-
+#endif
 	if ((HWREV_TYPE_IS_PORTABLE(system_rev) || HWREV_TYPE_IS_FINAL(system_rev)))
 	{
 		if (HWREV_REV(system_rev) >= HWREV_REV_1 && HWREV_REV(system_rev) < HWREV_REV_2)

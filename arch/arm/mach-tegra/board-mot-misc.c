@@ -250,11 +250,14 @@ static int __init parse_tag_motorola(const struct tag *tag)
     int i = 0;
 
     s_MotorolaDispInfo = moto_tag->panel_size;
+    printk(KERN_INFO "pICS_%s: s_MotorolaDispInfo = %d ",__func__, s_MotorolaDispInfo);
+	
     s_MotorolaFBInfo = moto_tag->allow_fb_open;
 
-    #ifdef CONFIG_MOT_ALLOW_FB_OPEN
+/*    #ifdef CONFIG_MOT_ALLOW_FB_OPEN*/
     s_MotorolaFBInfo = 1; // allow fb open for charger and bootmenu (minui)
-    #endif
+/*    #endif*/
+    printk(KERN_INFO "pICS_%s: s_MotorolaFBInfo = %d ",__func__, s_MotorolaFBInfo);
 
     mot_sec_platform_data.fl_factory = moto_tag->in_factory;
 
