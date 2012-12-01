@@ -391,8 +391,7 @@ static void __init tegra_setup_sdhci(void) {
 	tegra_sdhci_platform[3].is_always_on = 1;
 	tegra_sdhci_platform[3].gpio_nr_wp = -1;
 	tegra_sdhci_platform[3].gpio_nr_cd = -1;
-	tegra_sdhci_platform[3].gpio_polarity_cd = 0;
-	tegra_sdhci_platform[3].bus_width = 4;
+	tegra_sdhci_platform[3].bus_width = 8;
 	tegra_sdhci_platform[3].max_clk = 50000000;
 	tegra_sdhci_platform[3].offset = 0x680000;
 	tegra_sdhci_platform[3].pinmux = tegra_pinmux_get("tegra-sdhci.3", 2, 0);
