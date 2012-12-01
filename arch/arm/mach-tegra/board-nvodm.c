@@ -121,7 +121,6 @@ static struct platform_device debug_uart = {
 static void __init tegra_setup_debug_uart(void)
 {
 	NvOdmDebugConsole uart = NvOdmQueryDebugConsole();
-	/* NvOdmDebugConsole uart = NvOdmDebugConsole_UartA;*/
 	const struct tegra_pingroup_config *pinmux = NULL;
 	const NvU32 *odm_table;
 	struct clk *c = NULL;
@@ -360,15 +359,45 @@ static void __init tegra_setup_sdhci(void) {
 
 	/* Olympus P3+, Etna P2+, Etna S3+, Daytona and Sunfire
 	   can handle shutting down the external SD card. */
+	
+/*	printk(KERN_INFO "pICS_%s: NvOdmQueryClockLimits",__func__);
+	NvOdmQueryClockLimits(NvOdmIoModule_Sdio, &clock_limits, &clock_count);
+	for (i=0; i<clock_count; i++ ) printk(KERN_INFO "pICS_%s: clock_limits = %lu, clock_count = %lu ",__func__, clock_limits[i]*1000, clock_count);
+	printk(KERN_INFO "pICS_%s: NvOdmQueryPinMux",__func__);
+	NvOdmQueryPinMux(NvOdmIoModule_Sdio, &pinmux, &nr_pinmux);
+	for (i=0; i<clock_count; i++ ) printk(KERN_INFO "pICS_%s: pinmux = %lu, nr_pinmux = %lu",__func__, pinmux[i], nr_pinmux);*/
+
+	tegra_sdhci_platform[0].is_removable = 0;
+	tegra_sdhci_platform[0].is_always_on = 1;
+	tegra_sdhci_platform[0].gpio_nr_wp = -1;
+	tegra_sdhci_platform[0].gpio_nr_cd = -1;
+	tegra_sdhci_platform[0].bus_width = 4;
+	tegra_sdhci_platform[0].max_clk = 50000000;
+	tegra_sdhci_platform[0].pinmux = tegra_pinmux_get("tegra-sdhci.0", 1, 0);
+
+	tegra_sdhci_platform[2].is_removable = 1;
+	tegra_sdhci_platform[2].is_always_on = 0;
+	tegra_sdhci_platform[2].gpio_nr_wp = -1;
+	tegra_sdhci_platform[2].gpio_nr_cd = 69;
+	tegra_sdhci_platform[2].gpio_polarity_cd = 0;
+	tegra_sdhci_platform[2].bus_width = 4;
+	tegra_sdhci_platform[2].max_clk = 50000000;
 	if ( (HWREV_TYPE_IS_FINAL(system_rev) || (HWREV_TYPE_IS_PORTABLE(system_rev) && (HWREV_REV(system_rev) >= HWREV_REV_3)))) {
 		tegra_sdhci_platform[2].regulator_str = (char *)tegra_sdio_ext_reg_str;
 	}
-	printk(KERN_INFO "pICS_%s: NvOdmQueryClockLimits",__func__);
-	NvOdmQueryClockLimits(NvOdmIoModule_Sdio, &clock_limits, &clock_count);
-	printk(KERN_INFO "pICS_%s: NvOdmQueryPinMux",__func__);
-	NvOdmQueryPinMux(NvOdmIoModule_Sdio, &pinmux, &nr_pinmux);
+	tegra_sdhci_platform[2].pinmux = tegra_pinmux_get("tegra-sdhci.2", 2, 0);
 
-	for (i=0; i<ARRAY_SIZE(tegra_sdhci_platform); i++) {
+	tegra_sdhci_platform[3].is_removable = 0;
+	tegra_sdhci_platform[3].is_always_on = 1;
+	tegra_sdhci_platform[3].gpio_nr_wp = -1;
+	tegra_sdhci_platform[3].gpio_nr_cd = -1;
+	tegra_sdhci_platform[3].gpio_polarity_cd = 0;
+	tegra_sdhci_platform[3].bus_width = 4;
+	tegra_sdhci_platform[3].max_clk = 50000000;
+	tegra_sdhci_platform[3].offset = 0x680000;
+	tegra_sdhci_platform[3].pinmux = tegra_pinmux_get("tegra-sdhci.3", 2, 0);
+	
+/*	for (i=0; i<ARRAY_SIZE(tegra_sdhci_platform); i++) {
 		printk(KERN_INFO "pICS_%s: tegra_sdhci device %d ",__func__, i);
 		const NvOdmQuerySdioInterfaceProperty *prop;
 		prop = NvOdmQueryGetSdioInterfaceProperty(i);
@@ -431,24 +460,26 @@ static void __init tegra_setup_sdhci(void) {
 			plat->pinmux = tegra_pinmux_get(name,
 				pinmux[i], &plat->nr_pins);
 		}
-	}
+	}*/
 
-	if (tegra_sdhci_boot_device >= 0) {
 #ifdef CONFIG_EMBEDDED_MMC_START_OFFSET
 		/* check if an "MBR" partition was parsed from the tegra partition
 		 * command line, and store it in sdhci.3's offset field */
 		for (i=0; i<tegra_nand_plat.nr_parts; i++) {
 			plat = &tegra_sdhci_platform[tegra_sdhci_boot_device];
+			printk(KERN_INFO "pICS_%s: tegra_nand_plat.parts[%d].name = %s ",__func__, i, tegra_nand_plat.parts[i].name);
 			if (strcmp("mbr", tegra_nand_plat.parts[i].name))
 				continue;
-			plat->offset = tegra_nand_plat.parts[i].offset;
-			printk(KERN_INFO "pICS_%s: tegra_sdhci_boot_device plat->offset = 0x%lx ",__func__, plat->offset);
+			/*plat->offset = tegra_nand_plat.parts[i].offset;*/
+			printk(KERN_INFO "pICS_%s: tegra_sdhci_boot_device plat->offset = 0x%llx ",__func__, tegra_nand_plat.parts[i].offset);
 		}
 #endif
-		platform_device_register(&tegra_sdhci_devices[tegra_sdhci_boot_device]);
-	}
+	
+	platform_device_register(&tegra_sdhci_devices[3]);
+	platform_device_register(&tegra_sdhci_devices[0]);
+	platform_device_register(&tegra_sdhci_devices[2]);
 
-	for (i=0; i<ARRAY_SIZE(tegra_sdhci_platform); i++) {
+/*	for (i=0; i<ARRAY_SIZE(tegra_sdhci_platform); i++) {
 		const NvOdmQuerySdioInterfaceProperty *prop;
 		prop = NvOdmQueryGetSdioInterfaceProperty(i);
 		if (i == tegra_sdhci_boot_device || !prop ||
@@ -456,7 +487,7 @@ static void __init tegra_setup_sdhci(void) {
 			continue;
 
 		platform_device_register(&tegra_sdhci_devices[i]);
-	}
+	}*/
 }
 #else
 static void __init tegra_setup_sdhci(void) { }

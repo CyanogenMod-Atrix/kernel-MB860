@@ -22,60 +22,9 @@
 
 #include "gpio-names.h"
 #include "board-mot.h"
-#include "nvodm_query.h"
-#include "nvodm_query_pinmux.h"
-#include "nvodm_query_discovery.h"
-#include "nvrm_pinmux.h"
-#include "nvrm_module.h"
 
 #if defined(CONFIG_APANIC_MMC) || defined(CONFIG_APANIC_RAM)
 #include <mach/apanic.h>
-#endif
-
-#ifdef CONFIG_APANIC_RAM
-/* The kernel modifies these, so we need two. */
-static struct resource apanic_handle_ram_resource[] = {
-    {
-        .flags = IORESOURCE_MEM,
-    },
-};
-static struct resource apanic_report_ram_resource[] = {
-    {
-        .flags = IORESOURCE_MEM,
-    },
-};
-static struct platform_device apanic_handle_ram_platform_device = {
-    .name          = "apanic_handle_ram",
-    .id            = 0,
-    .num_resources = ARRAY_SIZE(apanic_handle_ram_resource),
-    .resource      = apanic_handle_ram_resource,
-
-};
-static struct platform_device apanic_report_ram_platform_device = {
-    .name          = "apanic_report_ram",
-    .id            = 0,
-    .num_resources = ARRAY_SIZE(apanic_report_ram_resource),
-    .resource      = apanic_report_ram_resource,
-
-};
-
-static int __init apanic_ram_init(void)
-{
-    int result = -ENOMEM;
-
-	printk(KERN_INFO "apanic_ram_init\n");
-    if (mot_get_apanic_resource(&apanic_handle_ram_resource[0]) == 0)
-    {
-    	result = platform_device_register(&apanic_handle_ram_platform_device);
-    }
-    if (result == 0 &&
-        mot_get_apanic_resource(&apanic_report_ram_resource[0]) == 0)
-    {
-        result = platform_device_register(&apanic_report_ram_platform_device);
-    }
-
-    return result;
-}
 #endif
 
 #ifdef CONFIG_APANIC_MMC

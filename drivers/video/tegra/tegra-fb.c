@@ -243,6 +243,7 @@ static NvBool tegra_fb_power_register( void )
 
 static NvBool tegra_fb_power_on( void )
 {
+	printk(KERN_INFO "pICS_%s: NvRmModuleID_GraphicsHost = %d",__func__, NvRmModuleID_GraphicsHost);
 	if( NvRmPowerVoltageControl( s_hRmGlobal,
 		NVRM_MODULE_ID( NvRmModuleID_GraphicsHost, 0 ),
 		s_power_id, NvRmVoltsUnspecified, NvRmVoltsUnspecified,
@@ -380,15 +381,21 @@ static int tegra_plat_probe( struct platform_device *d )
 		printk("nvtegrafb: Unable to query bootup framebuffer memory.\n");
 		return -1;
 	}
-
+	printk(KERN_INFO "pICS_%s: Framebuffer probing \n",__func__);
 	tegra_fb_power_register();
 
 	s_fb_width = boot_fb.Width;
+	printk(KERN_INFO "pICS_%s: s_fb_width = %d ",__func__, s_fb_width);
 	s_fb_height = boot_fb.Height * boot_fb.NumSurfaces;
+	printk(KERN_INFO "pICS_%s: s_fb_height = %d ",__func__, s_fb_height);
 	s_fb_size = boot_fb.Size;
+	printk(KERN_INFO "pICS_%s: s_fb_size = %d ",__func__, s_fb_size);
 	s_fb_addr = NvRmMemPin(s_fb_hMem);
+	printk(KERN_INFO "pICS_%s: s_fb_addr = %d ",__func__, s_fb_addr);
 	s_fb_Bpp = NV_COLOR_GET_BPP(boot_fb.ColorFormat) >> 3;
+	printk(KERN_INFO "pICS_%s: s_fb_Bpp = %d ",__func__, s_fb_Bpp);
 	s_fb_regs = ioremap_nocache( DISPLAY_BASE, 256 * 1024 );
+	printk(KERN_INFO "pICS_%s: s_fb_regs = %lu ",__func__, s_fb_regs);
 
 	/* need to poke a trigger register if the tearing effect signal is
 	 * used
@@ -396,6 +403,7 @@ static int tegra_plat_probe( struct platform_device *d )
 	if( boot_fb.Flags & NVBOOTARG_FB_FLAG_TEARING_EFFECT )
 	{
 		s_use_tearing_effect = 1;
+		
 	}
 
 	tegra_fb_info.fix.smem_start = s_fb_addr;
