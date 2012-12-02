@@ -356,16 +356,13 @@ static void __init tegra_setup_sdhci(void) {
 	NvU32 gpio_count;
 	NvRmModuleSdmmcInterfaceCaps caps;
 	int i;
-
-	/* Olympus P3+, Etna P2+, Etna S3+, Daytona and Sunfire
-	   can handle shutting down the external SD card. */
 	
 /*	printk(KERN_INFO "pICS_%s: NvOdmQueryClockLimits",__func__);
 	NvOdmQueryClockLimits(NvOdmIoModule_Sdio, &clock_limits, &clock_count);
 	for (i=0; i<clock_count; i++ ) printk(KERN_INFO "pICS_%s: clock_limits = %lu, clock_count = %lu ",__func__, clock_limits[i]*1000, clock_count);*/
 	printk(KERN_INFO "pICS_%s: NvOdmQueryPinMux",__func__);
 	NvOdmQueryPinMux(NvOdmIoModule_Sdio, &pinmux, &nr_pinmux);
-	for (i=0; i<clock_count; i++ ) printk(KERN_INFO "pICS_%s: pinmux = %lu, nr_pinmux = %lu",__func__, pinmux[i], nr_pinmux);
+	/*for (i=0; i<clock_count; i++ ) printk(KERN_INFO "pICS_%s: pinmux = %lu, nr_pinmux = %lu",__func__, pinmux[i], nr_pinmux);*/
 
 	tegra_sdhci_platform[0].is_removable = 0;
 	tegra_sdhci_platform[0].is_always_on = 1;
@@ -382,6 +379,9 @@ static void __init tegra_setup_sdhci(void) {
 	tegra_sdhci_platform[2].gpio_polarity_cd = 0;
 	tegra_sdhci_platform[2].bus_width = 4;
 	tegra_sdhci_platform[2].max_clk = 50000000;
+
+	/* Olympus P3+, Etna P2+, Etna S3+, Daytona and Sunfire
+	   can handle shutting down the external SD card. */
 	if ( (HWREV_TYPE_IS_FINAL(system_rev) || (HWREV_TYPE_IS_PORTABLE(system_rev) && (HWREV_REV(system_rev) >= HWREV_REV_3)))) {
 		tegra_sdhci_platform[2].regulator_str = (char *)tegra_sdio_ext_reg_str;
 	}
