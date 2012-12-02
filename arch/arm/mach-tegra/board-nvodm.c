@@ -362,10 +362,10 @@ static void __init tegra_setup_sdhci(void) {
 	
 /*	printk(KERN_INFO "pICS_%s: NvOdmQueryClockLimits",__func__);
 	NvOdmQueryClockLimits(NvOdmIoModule_Sdio, &clock_limits, &clock_count);
-	for (i=0; i<clock_count; i++ ) printk(KERN_INFO "pICS_%s: clock_limits = %lu, clock_count = %lu ",__func__, clock_limits[i]*1000, clock_count);
+	for (i=0; i<clock_count; i++ ) printk(KERN_INFO "pICS_%s: clock_limits = %lu, clock_count = %lu ",__func__, clock_limits[i]*1000, clock_count);*/
 	printk(KERN_INFO "pICS_%s: NvOdmQueryPinMux",__func__);
 	NvOdmQueryPinMux(NvOdmIoModule_Sdio, &pinmux, &nr_pinmux);
-	for (i=0; i<clock_count; i++ ) printk(KERN_INFO "pICS_%s: pinmux = %lu, nr_pinmux = %lu",__func__, pinmux[i], nr_pinmux);*/
+	for (i=0; i<clock_count; i++ ) printk(KERN_INFO "pICS_%s: pinmux = %lu, nr_pinmux = %lu",__func__, pinmux[i], nr_pinmux);
 
 	tegra_sdhci_platform[0].is_removable = 0;
 	tegra_sdhci_platform[0].is_always_on = 1;
