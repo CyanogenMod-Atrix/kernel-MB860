@@ -362,7 +362,7 @@ static void __init tegra_setup_sdhci(void) {
 	for (i=0; i<clock_count; i++ ) printk(KERN_INFO "pICS_%s: clock_limits = %lu, clock_count = %lu ",__func__, clock_limits[i]*1000, clock_count);*/
 	printk(KERN_INFO "pICS_%s: NvOdmQueryPinMux",__func__);
 	NvOdmQueryPinMux(NvOdmIoModule_Sdio, &pinmux, &nr_pinmux);
-	/*for (i=0; i<clock_count; i++ ) printk(KERN_INFO "pICS_%s: pinmux = %lu, nr_pinmux = %lu",__func__, pinmux[i], nr_pinmux);*/
+	for (i=0; i<nr_pinmux; i++ ) printk(KERN_INFO "pICS_%s: pinmux = %lu, nr_pinmux = %lu",__func__, pinmux[i], nr_pinmux);
 
 	tegra_sdhci_platform[0].is_removable = 0;
 	tegra_sdhci_platform[0].is_always_on = 1;
@@ -370,7 +370,7 @@ static void __init tegra_setup_sdhci(void) {
 	tegra_sdhci_platform[0].gpio_nr_cd = -1;
 	tegra_sdhci_platform[0].bus_width = 4;
 	tegra_sdhci_platform[0].max_clk = 50000000;
-	tegra_sdhci_platform[0].pinmux = tegra_pinmux_get("tegra-sdhci.0", 1, 0);
+/*	tegra_sdhci_platform[0].pinmux = tegra_pinmux_get("tegra-sdhci.0", 1, 0);*/
 
 	tegra_sdhci_platform[2].is_removable = 1;
 	tegra_sdhci_platform[2].is_always_on = 0;
@@ -385,7 +385,7 @@ static void __init tegra_setup_sdhci(void) {
 	if ( (HWREV_TYPE_IS_FINAL(system_rev) || (HWREV_TYPE_IS_PORTABLE(system_rev) && (HWREV_REV(system_rev) >= HWREV_REV_3)))) {
 		tegra_sdhci_platform[2].regulator_str = (char *)tegra_sdio_ext_reg_str;
 	}
-	tegra_sdhci_platform[2].pinmux = tegra_pinmux_get("tegra-sdhci.2", 2, 0);
+/*	tegra_sdhci_platform[2].pinmux = tegra_pinmux_get("tegra-sdhci.2", 2, 0);*/
 
 	tegra_sdhci_platform[3].is_removable = 0;
 	tegra_sdhci_platform[3].is_always_on = 1;
@@ -457,7 +457,7 @@ static void __init tegra_setup_sdhci(void) {
 		if (pinmux && i<nr_pinmux) {
 			char name[20];
 			snprintf(name, sizeof(name), "tegra-sdhci.%d", i);
-			if (i==3) plat->pinmux = tegra_pinmux_get(name,	pinmux[i], &plat->nr_pins);
+			plat->pinmux = tegra_pinmux_get(name,	pinmux[i], &plat->nr_pins);
 		}
 	}
 
