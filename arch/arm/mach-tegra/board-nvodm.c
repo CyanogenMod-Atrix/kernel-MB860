@@ -393,8 +393,8 @@ static void __init tegra_setup_sdhci(void) {
 	tegra_sdhci_platform[3].gpio_nr_cd = -1;
 	tegra_sdhci_platform[3].bus_width = 8;
 	tegra_sdhci_platform[3].max_clk = 50000000;
-/*	tegra_sdhci_platform[3].offset = 0x680000;
-	tegra_sdhci_platform[3].pinmux = tegra_pinmux_get("tegra-sdhci.3", 2, 0);*/
+	tegra_sdhci_platform[3].offset = 0x680000;
+/*	tegra_sdhci_platform[3].pinmux = tegra_pinmux_get("tegra-sdhci.3", 2, 0);*/
 	
 	for (i=0; i<ARRAY_SIZE(tegra_sdhci_platform); i++) {
 		printk(KERN_INFO "pICS_%s: tegra_sdhci device %d ",__func__, i);
@@ -470,7 +470,7 @@ static void __init tegra_setup_sdhci(void) {
 			/*printk(KERN_INFO "pICS_%s: tegra_nand_plat.parts[%d].name = %s ",__func__, i, tegra_nand_plat.parts[i].name);*/
 			if (strcmp("mbr", tegra_nand_plat.parts[i].name))
 				continue;
-			plat->offset = tegra_nand_plat.parts[i].offset;
+			/*plat->offset = tegra_nand_plat.parts[i].offset;*/
 			/*printk(KERN_INFO "pICS_%s: tegra_sdhci_boot_device plat->offset = 0x%llx ",__func__, tegra_nand_plat.parts[i].offset);*/
 		}
 #endif
