@@ -370,7 +370,7 @@ static void __init tegra_setup_sdhci(void) {
 	tegra_sdhci_platform[0].gpio_nr_cd = -1;
 	tegra_sdhci_platform[0].bus_width = 4;
 	tegra_sdhci_platform[0].max_clk = 50000000;
-/*	tegra_sdhci_platform[0].pinmux = tegra_pinmux_get("tegra-sdhci.0", 1, 0);*/
+	tegra_sdhci_platform[0].pinmux = tegra_pinmux_get("tegra-sdhci.0", 1, tegra_sdhci_platform[0].nr_pins);
 
 	tegra_sdhci_platform[2].is_removable = 1;
 	tegra_sdhci_platform[2].is_always_on = 0;
@@ -385,7 +385,7 @@ static void __init tegra_setup_sdhci(void) {
 	if ( (HWREV_TYPE_IS_FINAL(system_rev) || (HWREV_TYPE_IS_PORTABLE(system_rev) && (HWREV_REV(system_rev) >= HWREV_REV_3)))) {
 		tegra_sdhci_platform[2].regulator_str = (char *)tegra_sdio_ext_reg_str;
 	}
-/*	tegra_sdhci_platform[2].pinmux = tegra_pinmux_get("tegra-sdhci.2", 2, 0);*/
+	tegra_sdhci_platform[2].pinmux = tegra_pinmux_get("tegra-sdhci.2", 2, tegra_sdhci_platform[2].nr_pins);
 
 	tegra_sdhci_platform[3].is_removable = 0;
 	tegra_sdhci_platform[3].is_always_on = 1;
@@ -393,9 +393,9 @@ static void __init tegra_setup_sdhci(void) {
 	tegra_sdhci_platform[3].gpio_nr_cd = -1;
 	tegra_sdhci_platform[3].bus_width = 8;
 	tegra_sdhci_platform[3].max_clk = 50000000;
-/*	tegra_sdhci_platform[3].offset = 0x680000;*/
-/*	tegra_sdhci_platform[3].pinmux = tegra_pinmux_get("tegra-sdhci.3", 2, 0);*/
-	
+	tegra_sdhci_platform[3].offset = 0x680000;
+	tegra_sdhci_platform[3].pinmux = tegra_pinmux_get("tegra-sdhci.3", 2, tegra_sdhci_platform[3].nr_pins);
+#if 0	
 	for (i=0; i<ARRAY_SIZE(tegra_sdhci_platform); i++) {
 		printk(KERN_INFO "pICS_%s: tegra_sdhci device %d ",__func__, i);
 		const NvOdmQuerySdioInterfaceProperty *prop;
@@ -409,7 +409,7 @@ static void __init tegra_setup_sdhci(void) {
 		plat = &tegra_sdhci_platform[i];
 		gpio = NvOdmQueryGpioPinMap(NvOdmGpioPinGroup_Sdio,
 			i, &gpio_count);
-/*
+
 		plat->is_removable = prop->IsCardRemovable;
 		printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] is_removable = %d ",__func__, i, plat->is_removable);
 		plat->is_always_on = prop->AlwaysON;
@@ -453,7 +453,7 @@ static void __init tegra_setup_sdhci(void) {
 			plat->max_clk = clock_limits[i] * 1000;
 			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] max_clk = %lu ",__func__, i, plat->max_clk);
 		}
-*/
+
 		if (pinmux && i<nr_pinmux) {
 			char name[20];
 			snprintf(name, sizeof(name), "tegra-sdhci.%d", i);
@@ -473,7 +473,8 @@ static void __init tegra_setup_sdhci(void) {
 			printk(KERN_INFO "pICS_%s: tegra_sdhci_boot_device plat->offset = 0x%llx ",__func__, tegra_nand_plat.parts[i].offset);
 		}
 #endif
-	
+#endif	
+
 	platform_device_register(&tegra_sdhci_devices[3]);
 	platform_device_register(&tegra_sdhci_devices[0]);
 	platform_device_register(&tegra_sdhci_devices[2]);
