@@ -496,7 +496,7 @@ static struct platform_device tegra_uart[] = {
 };
 static void __init tegra_setup_hsuart(void)
 {
-	NvOdmDebugConsole uart = NvOdmQueryDebugConsole();
+	/*NvOdmDebugConsole uart = NvOdmQueryDebugConsole();
 	int dbg_id = (int)uart - (int)NvOdmDebugConsole_UartA;
 	const NvU32 *odm_table;
 	NvU32 odm_nr;
@@ -532,7 +532,14 @@ static void __init tegra_setup_hsuart(void)
 			pr_err("%s: failed to register %s.%d\n",
 			       __func__, tegra_uart[i].name, tegra_uart[i].id);
 		}
-	}
+	}*/
+	tegra_uart_platform[0].pinmux = tegra_pinmux_get("tegra_uart.0", 4, &tegra_uart_platform[0].nr_pins);
+	/* set if no debug on UARTB */
+	/* tegra_uart_platform[1].pinmux = tegra_pinmux_get("tegra_uart.1", TO_FILL, &tegra_uart_platform[1].nr_pins);*/
+	tegra_uart_platform[2].pinmux = tegra_pinmux_get("tegra_uart.2", 1, &tegra_uart_platform[2].nr_pins);
+	tegra_uart_platform[3].pinmux = tegra_pinmux_get("tegra_uart.3", 2, &tegra_uart_platform[3].nr_pins);
+	tegra_uart_platform[4].pinmux = tegra_pinmux_get("tegra_uart.4", 4, &tegra_uart_platform[3].nr_pins);
+
 }
 #else
 static void __init tegra_setup_hsuart(void) { }
@@ -660,13 +667,14 @@ static struct platform_device tegra_otg = {
 
 static void __init tegra_setup_hcd(void)
 {
+#if 0
 	int i;
-
+ 
 	for (i=0; i<ARRAY_SIZE(tegra_hcd_platform); i++) {
 		const NvOdmUsbProperty *p;
 		struct tegra_hcd_platform_data *plat = &tegra_hcd_platform[i];
 		printk(KERN_INFO "pICS_%s: tegra_hcd_platform[%d] NvOdmQueryGetUsbProperty",__func__, i);
-		p = NvOdmQueryGetUsbProperty(NvOdmIoModule_Usb, i);
+		
 
 		if ((p->UsbMode == NvOdmUsbModeType_Device) ||
 		    (p->UsbMode == NvOdmUsbModeType_None))
@@ -723,6 +731,48 @@ static void __init tegra_setup_hcd(void)
 		}
 		platform_device_register(&tegra_hcd[i]);
 	}
+#endif
+
+/*	const NvOdmUsbProperty *p;
+	p = NvOdmQueryGetUsbProperty(NvOdmIoModule_Usb, i);*/
+
+
+
+	static const NvOdmUsbProperty Usb1Property =
+   	{
+    /* Specifies the USB controller is connected to a standard UTMI interface
+     (only valid for ::NvOdmIoModule_Usb).
+     NvOdmUsbInterfaceType_Utmi = 1,*/
+		1,
+		/* /// Specifies charger type 0, USB compliant charger, when D+ and D- are at low voltage.
+    		NvOdmUsbChargerType_SE0 = 1,
+		/// Specifies charger type 2, when D+ is low and D- is high.
+    		NvOdmUsbChargerType_SK = 4,
+    		/// Specifies charger type 3, when D+ and D- are at high voltage.
+    		NvOdmUsbChargerType_SE1 = 8,
+
+	        (NvOdmUsbChargerType_SE0 | NvOdmUsbChargerType_SE1 | NvOdmUsbChargerType_SK),*/
+		(1 | 8 | 4),
+	        20,
+        	0, /*NV_FALSE,*/
+		/// Specifies the instance as USB OTG.
+    		4, /* NvOdmUsbModeType_OTG */
+	        0, /*NvOdmUsbIdPinType_None,*/
+	        0, /*NvOdmUsbConnectorsMuxType_None,*/
+        	0 /*NV_FALSE*/
+   	};
+
+	tegra_otg_platform.usb_property = &Usb1Property;
+	platform_device_register(&tegra_otg);
+
+	tegra_hcd_platform[0].otg_mode = 1;
+
+	tegra_hcd_platform[2].otg_mode = 0;
+	tegra_hcd_platform[2].fast_wakeup = 1;
+
+	platform_device_register(&tegra_hcd[0]);
+	platform_device_register(&tegra_hcd[2]);
+
 }
 #else
 static inline void tegra_setup_hcd(void) { }
@@ -749,21 +799,27 @@ static noinline void __init tegra_setup_kbc(void)
 	NvU32 vnum;
 
 	pdata->keymap = kzalloc(sizeof(*pdata->keymap)*KBC_MAX_KEY, GFP_KERNEL);
+	printk(KERN_INFO "pICS_%s: pdata->keymap pointer to memory where key mapping is stored",__func__);
 	if (!pdata->keymap) {
 		pr_err("%s: out of memory for key mapping\n", __func__);
 		return;
 	}
-	pdata->wake_cnt = 0;
+	pdata->wake_cnt = 0; /* 0:wake on any key >1:wake on wake_cfg */
+	printk(KERN_INFO "pICS_%s: pdata->wake_cnt = %d",__func__, pdata->wake_cnt);
 	if (NvOdmKbcIsSelectKeysWkUpEnabled(&wake_row, &wake_col, &wake_num)) {
 		BUG_ON(wake_num >= KBC_MAX_KEY);
 		if (wake_num) {
 		pdata->wake_cfg = kzalloc(sizeof(*pdata->wake_cfg)*wake_num,
 			GFP_KERNEL);
+		printk(KERN_INFO "pICS_%s: pdata->wake_cfg pointer to memory where key wake config is stored",__func__);
 		if (pdata->wake_cfg) {
 			pdata->wake_cnt = (int)wake_num;
+			printk(KERN_INFO "pICS_%s: pdata->wake_cnt = %d",__func__, pdata->wake_cnt);
 			for (i=0; i<wake_num; i++) {
 				pdata->wake_cfg[i].row=wake_row[i];
+				printk(KERN_INFO "pICS_%s: pdata->wake_cfg[%d].row = %d",__func__, i, wake_row[i]);
 				pdata->wake_cfg[i].col=wake_col[i];
+				printk(KERN_INFO "pICS_%s: pdata->wake_cfg[i].col = %d",__func__, i, wake_col[i]);
 			}
 		} else
 			pr_err("disabling wakeup key filtering due to "
@@ -777,11 +833,13 @@ static noinline void __init tegra_setup_kbc(void)
 
 	/* debounce time is reported from ODM in terms of clock ticks. */
 	pdata->debounce_cnt = temp;
+	printk(KERN_INFO "pICS_%s: pdata->debounce_cnt = %u",__func__, pdata->debounce_cnt);
 
 	/* repeat cycle is reported from ODM in milliseconds,
 	 * but needs to be specified in 32KHz ticks */
 	NvOdmKbcGetParameter(NvOdmKbcParameter_RepeatCycleTime, 1, &temp);
 	pdata->repeat_cnt = temp * 32;
+	printk(KERN_INFO "pICS_%s: pdata->repeat_cnt = %u",__func__, pdata->repeat_cnt);	
 
 	temp = NvOdmPeripheralEnumerate(&srch_attr, &srch_val, 1, &guid, 1);
 	if (!temp) {
@@ -803,21 +861,27 @@ static noinline void __init tegra_setup_kbc(void)
 
 		if (conn->AddressList[i].Instance) {
 			pdata->pin_cfg[addr].num = cols++;
+			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].num = %u",__func__, addr, pdata->pin_cfg[addr].num);
 			pdata->pin_cfg[addr].is_col = true;
+			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].is_col = true",__func__, addr);
 		} else {
 			pdata->pin_cfg[addr].num = rows++;
+			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].num = %u",__func__, addr, pdata->pin_cfg[addr].num);
 			pdata->pin_cfg[addr].is_row = true;
+			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].is_row = true",__func__, addr);
 		}
 	}
 
-	for (i=0; i<KBC_MAX_KEY; i++)
+	for (i=0; i<KBC_MAX_KEY; i++) {
 		pdata->keymap[i] = -1;
-
+		printk(KERN_INFO "pICS_%s: pdata->keymap[%d] = -1",__func__, i);
+	}
 	vnum = NvOdmKbcKeyMappingGetVirtualKeyMappingList(&vkeys);
-
+	printk(KERN_INFO "pICS_%s: vnum = %d",__func__, vnum);
 	for (i=0; i<rows; i++) {
 		for (j=0; j<cols; j++) {
 			NvU32 sc = NvOdmKbcGetKeyCode(i, j, rows, cols);
+			printk(KERN_INFO "pICS_%s: sc = %lu",__func__, sc);
 			for (k=0; k<vnum; k++) {
 				if (sc >= vkeys[k]->StartScanCode &&
 				    sc <= vkeys[k]->EndScanCode) {
@@ -825,6 +889,7 @@ static noinline void __init tegra_setup_kbc(void)
 					sc = vkeys[k]->pVirtualKeyTable[sc];
 					if (!sc) continue;
 					pdata->keymap[kbc_indexof(i,j)]=sc;
+					printk(KERN_INFO "pICS_%s: pdata->keymap[kbc_indexof(%d,%d)] = %lu",__func__, i, j, sc);
 				}
 
                         }
