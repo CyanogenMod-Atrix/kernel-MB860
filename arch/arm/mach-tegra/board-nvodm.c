@@ -347,23 +347,9 @@ int tegra_sdhci_boot_device = -1;
 #define active_high(_pin) ((_pin)->activeState == NvOdmGpioPinActiveState_High ? 1 : 0)
 
 static void __init tegra_setup_sdhci(void) {
-	const NvOdmGpioPinInfo *gpio;
-	struct tegra_sdhci_platform_data *plat;
-	const NvU32 *clock_limits;
-	const NvU32 *pinmux;
-	NvU32 nr_pinmux;
-	NvU32 clock_count;
-	NvU32 gpio_count;
-	NvRmModuleSdmmcInterfaceCaps caps;
+
 	int i;
 	
-/*	printk(KERN_INFO "pICS_%s: NvOdmQueryClockLimits",__func__);
-	NvOdmQueryClockLimits(NvOdmIoModule_Sdio, &clock_limits, &clock_count);
-	for (i=0; i<clock_count; i++ ) printk(KERN_INFO "pICS_%s: clock_limits = %lu, clock_count = %lu ",__func__, clock_limits[i]*1000, clock_count);*/
-	printk(KERN_INFO "pICS_%s: NvOdmQueryPinMux",__func__);
-	NvOdmQueryPinMux(NvOdmIoModule_Sdio, &pinmux, &nr_pinmux);
-	for (i=0; i<nr_pinmux; i++ ) printk(KERN_INFO "pICS_%s: pinmux = %lu, nr_pinmux = %lu",__func__, pinmux[i], nr_pinmux);
-
 	tegra_sdhci_platform[0].is_removable = 0;
 	tegra_sdhci_platform[0].is_always_on = 1;
 	tegra_sdhci_platform[0].gpio_nr_wp = -1;
@@ -393,101 +379,25 @@ static void __init tegra_setup_sdhci(void) {
 	tegra_sdhci_platform[3].gpio_nr_cd = -1;
 	tegra_sdhci_platform[3].bus_width = 8;
 	tegra_sdhci_platform[3].max_clk = 50000000;
-	tegra_sdhci_platform[3].offset = 0x680000;
-	tegra_sdhci_platform[3].pinmux = tegra_pinmux_get("tegra-sdhci.3", 2, &tegra_sdhci_platform[3].nr_pins);
-#if 0	
-	for (i=0; i<ARRAY_SIZE(tegra_sdhci_platform); i++) {
-		printk(KERN_INFO "pICS_%s: tegra_sdhci device %d ",__func__, i);
-		const NvOdmQuerySdioInterfaceProperty *prop;
-		prop = NvOdmQueryGetSdioInterfaceProperty(i);
-		if (!prop || prop->usage==NvOdmQuerySdioSlotUsage_unused)
-			continue;
-		if (prop->usage==NvOdmQuerySdioSlotUsage_Boot) {
-			printk(KERN_INFO "pICS_%s: tegra_sdhci_boot_device = %d ",__func__, i);
-			tegra_sdhci_boot_device = i;	
-		}
-		plat = &tegra_sdhci_platform[i];
-		gpio = NvOdmQueryGpioPinMap(NvOdmGpioPinGroup_Sdio,
-			i, &gpio_count);
-
-		plat->is_removable = prop->IsCardRemovable;
-		printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] is_removable = %d ",__func__, i, plat->is_removable);
-		plat->is_always_on = prop->AlwaysON;
-		printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] is_always_on = %d ",__func__, i, plat->is_always_on);
-		if (!gpio)
-			gpio_count = 0;
-		switch (gpio_count) {
-		case 2:
-			plat->gpio_nr_wp = 8*gpio[1].Port + gpio[1].Pin;
-			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] wp_gpio = %d ",__func__, i, plat->gpio_nr_wp);
-			plat->gpio_nr_cd = 8*gpio[0].Port + gpio[0].Pin;
-			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] cd_gpio = %d ",__func__, i, plat->gpio_nr_cd);
-			plat->gpio_polarity_wp = active_high(&gpio[1]);
-			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] gpio_polarity_wp = %d ",__func__, i, plat->gpio_polarity_wp);
-			plat->gpio_polarity_cd = active_high(&gpio[0]);
-			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] gpio_polarity_cd = %d ",__func__, i, plat->gpio_polarity_cd);
-			break;
-		case 1:
-			plat->gpio_nr_wp = -1;
-			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] wp_gpio = %d ",__func__, i, plat->gpio_nr_wp);
-			plat->gpio_nr_cd = 8*gpio[0].Port + gpio[0].Pin;
-			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] cd_gpio = %d ",__func__, i, plat->gpio_nr_cd);
-			plat->gpio_polarity_cd = active_high(&gpio[0]);
-			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] gpio_polarity_cd = %d ",__func__, i, plat->gpio_polarity_cd);
-			break;
-		case 0:
-			plat->gpio_nr_wp = -1;
-			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] wp_gpio = %d ",__func__, i, plat->gpio_nr_wp);
-			plat->gpio_nr_cd = -1;
-			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] cd_gpio = %d ",__func__, i, plat->gpio_nr_cd);
-			break;
-		}
-
-		if (NvRmGetModuleInterfaceCapabilities(s_hRmGlobal,
-			NVRM_MODULE_ID(NvRmModuleID_Sdio, i),
-			sizeof(caps), &caps)==NvSuccess) {
-			plat->bus_width = caps.MmcInterfaceWidth;
-			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] bus_width = %d ",__func__, i, plat->bus_width);	
-		}
-		if (clock_limits && i<clock_count) {
-			plat->max_clk = clock_limits[i] * 1000;
-			printk(KERN_INFO "pICS_%s: tegra_sdhci_device[%d] max_clk = %lu ",__func__, i, plat->max_clk);
-		}
-
-		if (pinmux && i<nr_pinmux) {
-			char name[20];
-			snprintf(name, sizeof(name), "tegra-sdhci.%d", i);
-			plat->pinmux = tegra_pinmux_get(name,	pinmux[i], &plat->nr_pins);
-		}
-	}
+/*	tegra_sdhci_platform[3].offset = 0x680000; */ /*IMPORTANT this is tegrapart related this one is for d00*/
+	tegra_sdhci_platform[3].pinmux = tegra_pinmux_get("tegra-sdhci.3", 2, &tegra_sdhci_platform[3].nr_pins);	
 
 #ifdef CONFIG_EMBEDDED_MMC_START_OFFSET
 		/* check if an "MBR" partition was parsed from the tegra partition
 		 * command line, and store it in sdhci.3's offset field */
 		for (i=0; i<tegra_nand_plat.nr_parts; i++) {
-			plat = &tegra_sdhci_platform[tegra_sdhci_boot_device];
 			printk(KERN_INFO "pICS_%s: tegra_nand_plat.parts[%d].name = %s ",__func__, i, tegra_nand_plat.parts[i].name);
 			if (strcmp("mbr", tegra_nand_plat.parts[i].name))
 				continue;
-			plat->offset = tegra_nand_plat.parts[i].offset;
+			tegra_sdhci_platform[3].offset = tegra_nand_plat.parts[i].offset;
 			printk(KERN_INFO "pICS_%s: tegra_sdhci_boot_device plat->offset = 0x%llx ",__func__, tegra_nand_plat.parts[i].offset);
 		}
 #endif
-#endif	
+
 
 	platform_device_register(&tegra_sdhci_devices[3]);
 	platform_device_register(&tegra_sdhci_devices[0]);
 	platform_device_register(&tegra_sdhci_devices[2]);
-
-/*	for (i=0; i<ARRAY_SIZE(tegra_sdhci_platform); i++) {
-		const NvOdmQuerySdioInterfaceProperty *prop;
-		prop = NvOdmQueryGetSdioInterfaceProperty(i);
-		if (i == tegra_sdhci_boot_device || !prop ||
-		    prop->usage==NvOdmQuerySdioSlotUsage_unused)
-			continue;
-
-		platform_device_register(&tegra_sdhci_devices[i]);
-	}*/
 }
 #else
 static void __init tegra_setup_sdhci(void) { }
