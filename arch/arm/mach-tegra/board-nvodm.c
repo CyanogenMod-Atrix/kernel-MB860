@@ -349,6 +349,8 @@ int tegra_sdhci_boot_device = -1;
 static void __init tegra_setup_sdhci(void) {
 
 	int i;
+
+	printk(KERN_INFO "pICS_%s: Starting...",__func__);
 	
 	tegra_sdhci_platform[0].is_removable = 0;
 	tegra_sdhci_platform[0].is_always_on = 1;
@@ -398,6 +400,8 @@ static void __init tegra_setup_sdhci(void) {
 	platform_device_register(&tegra_sdhci_devices[3]);
 	platform_device_register(&tegra_sdhci_devices[0]);
 	platform_device_register(&tegra_sdhci_devices[2]);
+
+	printk(KERN_INFO "pICS_%s: Ending...",__func__);
 }
 #else
 static void __init tegra_setup_sdhci(void) { }
@@ -496,6 +500,8 @@ static struct platform_device tegra_uart[] = {
 };
 static void __init tegra_setup_hsuart(void)
 {
+	printk(KERN_INFO "pICS_%s: Starting...",__func__);
+
 	/*NvOdmDebugConsole uart = NvOdmQueryDebugConsole();
 	int dbg_id = (int)uart - (int)NvOdmDebugConsole_UartA;
 	const NvU32 *odm_table;
@@ -539,6 +545,8 @@ static void __init tegra_setup_hsuart(void)
 	tegra_uart_platform[2].pinmux = tegra_pinmux_get("tegra_uart.2", 1, &tegra_uart_platform[2].nr_pins);
 	tegra_uart_platform[3].pinmux = tegra_pinmux_get("tegra_uart.3", 2, &tegra_uart_platform[3].nr_pins);
 	tegra_uart_platform[4].pinmux = tegra_pinmux_get("tegra_uart.4", 4, &tegra_uart_platform[3].nr_pins);
+
+	printk(KERN_INFO "pICS_%s: Ending...",__func__);
 
 }
 #else
@@ -667,6 +675,8 @@ static struct platform_device tegra_otg = {
 
 static void __init tegra_setup_hcd(void)
 {
+		
+		
 #if 0
 	int i;
  
@@ -736,7 +746,7 @@ static void __init tegra_setup_hcd(void)
 /*	const NvOdmUsbProperty *p;
 	p = NvOdmQueryGetUsbProperty(NvOdmIoModule_Usb, i);*/
 
-
+	
 
 	static const NvOdmUsbProperty Usb1Property =
    	{
@@ -762,6 +772,8 @@ static void __init tegra_setup_hcd(void)
         	0 /*NV_FALSE*/
    	};
 
+	printk(KERN_INFO "pICS_%s: Starting...",__func__);
+
 	tegra_otg_platform.usb_property = &Usb1Property;
 	platform_device_register(&tegra_otg);
 
@@ -772,6 +784,8 @@ static void __init tegra_setup_hcd(void)
 
 	platform_device_register(&tegra_hcd[0]);
 	platform_device_register(&tegra_hcd[2]);
+
+	printk(KERN_INFO "pICS_%s: Ending...",__func__);
 
 }
 #else
@@ -807,6 +821,9 @@ static noinline void __init tegra_setup_kbc(void)
 	pdata->wake_cnt = 0; /* 0:wake on any key >1:wake on wake_cfg */
 	printk(KERN_INFO "pICS_%s: pdata->wake_cnt = %d",__func__, pdata->wake_cnt);
 	if (NvOdmKbcIsSelectKeysWkUpEnabled(&wake_row, &wake_col, &wake_num)) {
+		for (i=0;i<wake_num;i++) printk(KERN_INFO "pICS_%s: wake_row[%i] = %i",__func__, i, wake_row[i]);
+		for (i=0;i<wake_num;i++) printk(KERN_INFO "pICS_%s: wake_col[%i] = %i",__func__, i, wake_col[i]);
+		printk(KERN_INFO "pICS_%s: wake_num = %d",__func__, wake_num);
 		BUG_ON(wake_num >= KBC_MAX_KEY);
 		if (wake_num) {
 		pdata->wake_cfg = kzalloc(sizeof(*pdata->wake_cfg)*wake_num,
@@ -819,7 +836,7 @@ static noinline void __init tegra_setup_kbc(void)
 				pdata->wake_cfg[i].row=wake_row[i];
 				printk(KERN_INFO "pICS_%s: pdata->wake_cfg[%d].row = %d",__func__, i, wake_row[i]);
 				pdata->wake_cfg[i].col=wake_col[i];
-				printk(KERN_INFO "pICS_%s: pdata->wake_cfg[i].col = %d",__func__, i, wake_col[i]);
+				printk(KERN_INFO "pICS_%s: pdata->wake_cfg[%d].col = %d",__func__, i, wake_col[i]);
 			}
 		} else
 			pr_err("disabling wakeup key filtering due to "
@@ -895,6 +912,112 @@ static noinline void __init tegra_setup_kbc(void)
                         }
 		}
 	}
+#if 0
+	struct tegra_kbc_plat *pdata = &tegra_kbc_platform;
+	const NvOdmPeripheralConnectivity *conn;
+	NvOdmPeripheralSearch srch_attr = NvOdmPeripheralSearch_IoModule;
+	const struct NvOdmKeyVirtTableDetail **vkeys;
+	NvU32 srch_val = NvOdmIoModule_Kbd;
+	NvU32 temp;
+	NvU64 guid;
+	NvU32 i, j, k;
+	NvU32 cols=0;
+	NvU32 rows=0;
+	NvU32 *wake_row;
+	NvU32 *wake_col;
+	NvU32 wake_num;
+	NvU32 vnum;
+
+	pdata->keymap = kzalloc(sizeof(*pdata->keymap)*KBC_MAX_KEY, GFP_KERNEL);
+	if (!pdata->keymap) {
+		pr_err("%s: out of memory for key mapping\n", __func__);
+		return;
+	}
+	pdata->wake_cnt = 5; /* 0:wake on any key >1:wake on wake_cfg */
+	pdata->wake_cfg = kzalloc(sizeof(*pdata->wake_cfg)*pdata->wake_cnt,
+			GFP_KERNEL);
+	if (pdata->wake_cfg) {
+			for (i=0; i<wake_num; i++) {
+				pdata->wake_cfg[i].row=wake_row[i];
+				printk(KERN_INFO "pICS_%s: pdata->wake_cfg[%d].row = %d",__func__, i, wake_row[i]);
+				pdata->wake_cfg[i].col=wake_col[i];
+				printk(KERN_INFO "pICS_%s: pdata->wake_cfg[%d].col = %d",__func__, i, wake_col[i]);
+			}
+		} else
+			pr_err("disabling wakeup key filtering due to "
+				"out-of-memory error\n");
+		} else
+			pr_warning("no wakeup keys are configured \n");
+
+	}
+
+	NvOdmKbcGetParameter(NvOdmKbcParameter_DebounceTime, 1, &temp);
+
+	/* debounce time is reported from ODM in terms of clock ticks. */
+	pdata->debounce_cnt = temp;
+	printk(KERN_INFO "pICS_%s: pdata->debounce_cnt = %u",__func__, pdata->debounce_cnt);
+
+	/* repeat cycle is reported from ODM in milliseconds,
+	 * but needs to be specified in 32KHz ticks */
+	NvOdmKbcGetParameter(NvOdmKbcParameter_RepeatCycleTime, 1, &temp);
+	pdata->repeat_cnt = temp * 32;
+	printk(KERN_INFO "pICS_%s: pdata->repeat_cnt = %u",__func__, pdata->repeat_cnt);	
+
+	temp = NvOdmPeripheralEnumerate(&srch_attr, &srch_val, 1, &guid, 1);
+	if (!temp) {
+		kfree(pdata->keymap);
+		pr_err("%s: failed to find keyboard module\n", __func__);
+		return;
+	}
+	conn = NvOdmPeripheralGetGuid(guid);
+	if (!conn) {
+		kfree(pdata->keymap);
+		pr_err("%s: failed to find keyboard\n", __func__);
+		return;
+	}
+
+	for (i=0; i<conn->NumAddress; i++) {
+		NvU32 addr = conn->AddressList[i].Address;
+
+		if (conn->AddressList[i].Interface!=NvOdmIoModule_Kbd) continue;
+
+		if (conn->AddressList[i].Instance) {
+			pdata->pin_cfg[addr].num = cols++;
+			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].num = %u",__func__, addr, pdata->pin_cfg[addr].num);
+			pdata->pin_cfg[addr].is_col = true;
+			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].is_col = true",__func__, addr);
+		} else {
+			pdata->pin_cfg[addr].num = rows++;
+			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].num = %u",__func__, addr, pdata->pin_cfg[addr].num);
+			pdata->pin_cfg[addr].is_row = true;
+			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].is_row = true",__func__, addr);
+		}
+	}
+
+	for (i=0; i<KBC_MAX_KEY; i++) {
+		pdata->keymap[i] = -1;
+		printk(KERN_INFO "pICS_%s: pdata->keymap[%d] = -1",__func__, i);
+	}
+	vnum = NvOdmKbcKeyMappingGetVirtualKeyMappingList(&vkeys);
+	printk(KERN_INFO "pICS_%s: vnum = %d",__func__, vnum);
+	for (i=0; i<rows; i++) {
+		for (j=0; j<cols; j++) {
+			NvU32 sc = NvOdmKbcGetKeyCode(i, j, rows, cols);
+			printk(KERN_INFO "pICS_%s: sc = %lu",__func__, sc);
+			for (k=0; k<vnum; k++) {
+				if (sc >= vkeys[k]->StartScanCode &&
+				    sc <= vkeys[k]->EndScanCode) {
+					sc -= vkeys[k]->StartScanCode;
+					sc = vkeys[k]->pVirtualKeyTable[sc];
+					if (!sc) continue;
+					pdata->keymap[kbc_indexof(i,j)]=sc;
+					printk(KERN_INFO "pICS_%s: pdata->keymap[kbc_indexof(%d,%d)] = %lu",__func__, i, j, sc);
+				}
+
+                        }
+		}
+	}
+#endif
 }
 #else
 static void tegra_setup_kbc(void) { }
