@@ -425,6 +425,18 @@ static int pinmux_show(void)
 		unsigned long pupd;
 
 		printk(KERN_INFO "[%d] %s", i, pingroups[i].name);
+
+		if (pingroups[i].mux_reg < 0) {
+			printk(KERN_INFO "[%d] NONE", i);
+		} else {
+			mux = (pg_readl(pingroups[i].mux_reg) >>
+			       pingroups[i].mux_bit) & 0x3;
+			if (pingroups[i].funcs[mux] == TEGRA_MUX_RSVD) {
+				printk(KERN_INFO "[%d] TEGRA_MUX_RSVD%1lu", i, mux+1);
+			} else {
+				printk(KERN_INFO "[%d] TEGRA_MUX_%s", i, tegra_mux_names[pingroups[i].funcs[mux]]);
+			}
+		}
 #if 0
 		/*snprintf(pg_name, sizeof(pg_name), "%s",
 			 pingroups[i].name);
