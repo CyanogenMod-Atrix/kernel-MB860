@@ -435,7 +435,7 @@ static int pinmux_show(void)
 			if (pingroups[i].funcs[mux] == TEGRA_MUX_RSVD) {
 				snprintf(pg_mux_name, sizeof(pg_mux_name), "TEGRA_MUX_RSVD%1lu", mux+1);
 			} else {
-				snprintf(pg_mux_name, sizeof(pg_mux_name), "TEGRA_MUX_%s", tegra_mux_names[pingroups[i].funcs[mux]]);
+				/*snprintf(pg_mux_name, sizeof(pg_mux_name), "TEGRA_MUX_%s", tegra_mux_names[pingroups[i].funcs[mux]]);*/
 			}
 		}
 
