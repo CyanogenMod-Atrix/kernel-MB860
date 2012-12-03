@@ -1493,7 +1493,7 @@ static void __init tegra_setup_suspend(void)
 	while (nr_wake--) {
 		printk(KERN_INFO "pICS_%s: w = %d)",__func__, w);
 		pad = w->WakeupPadNumber;
-		printk(KERN_INFO "pICS_%s: pad = %u)",__func__, pad); /* ICSPROBLEM here it might be */
+		/*printk(KERN_INFO "pICS_%s: pad = %u)",__func__, pad);*/ /* ICSPROBLEM here it might be */
 		if (pad < ARRAY_SIZE(wakepad_irq) && w->enable) {
 			enable_irq_wake(wakepad_irq[pad]);
 			printk(KERN_INFO "pICS_%s: enable_irq_wake(wakepad_irq[pad]=%d)",__func__, wakepad_irq[pad]);
