@@ -966,7 +966,7 @@ NvOdmEnableUsbPhyPowerRail(
     /* enable the power rail */
     if (Enable)
     {
-	printk(KERN_INFO "pICS_%s: enable the power rail", __func__);
+	/*printk(KERN_INFO "pICS_%s: enable the power rail", __func__);*/
         for( i = 0; i < pConnectivity->NumAddress; i++ )
         {
             if( pConnectivity->AddressList[i].Interface == NvOdmIoModule_Vdd )
@@ -982,7 +982,7 @@ NvOdmEnableUsbPhyPowerRail(
                 NvRmPmuSetVoltage(
                     hRmDevice, pConnectivity->AddressList[i].Address,
                     cap.requestMilliVolts, &settle_time_us );
-		printk(KERN_INFO "pICS_%s: NvRmPmuSetVoltage(hRmDevice, pConnectivity->AddressList[i=%d].Address=[%lu],cap.requestMilliVolts=[%lu], &settle_time_us=[%lu] );",__func__, i, pConnectivity->AddressList[i].Address, cap.requestMilliVolts, settle_time_us);
+		/*printk(KERN_INFO "pICS_%s: NvRmPmuSetVoltage(hRmDevice, pConnectivity->AddressList[i=%d].Address=[%lu],cap.requestMilliVolts=[%lu], &settle_time_us=[%lu] );",__func__, i, pConnectivity->AddressList[i].Address, cap.requestMilliVolts, settle_time_us);*/
 
                 /* wait for the rail to settle */
                 NvOsWaitUS( settle_time_us );
@@ -999,7 +999,7 @@ NvOdmEnableUsbPhyPowerRail(
                 NvRmPmuSetVoltage(
                     hRmDevice, pConnectivity->AddressList[i].Address,
                     ODM_VOLTAGE_OFF, 0 );
-		printk(KERN_INFO "pICS_%s: NvRmPmuSetVoltage(hRmDevice, pConnectivity->AddressList[i=%d].Address=[%lu],ODM_VOLTAGE_OFF=[%lu], 0);",__func__, i, pConnectivity->AddressList[i].Address, ODM_VOLTAGE_OFF);
+		/*printk(KERN_INFO "pICS_%s: NvRmPmuSetVoltage(hRmDevice, pConnectivity->AddressList[i=%d].Address=[%lu],ODM_VOLTAGE_OFF=[%lu], 0);",__func__, i, pConnectivity->AddressList[i].Address, ODM_VOLTAGE_OFF);*/
             }
         }
     }
