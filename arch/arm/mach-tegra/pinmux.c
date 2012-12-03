@@ -412,10 +412,10 @@ void tegra_pinmux_config_pinmux_table(const struct tegra_pingroup_config *config
 static int pinmux_show(void)
 {
 	int i;
-	char pg_name[16];
+/*	char pg_name[16];
 	char pg_mux_name[16];
 	char pg_pupd_name[16];
-	char pg_tri_name[16];
+	char pg_tri_name[16];*/
 
 	printk(KERN_INFO "pICS_PINMUX TABLE (PINGROUP;MUX;PUPD;TRISTATE;)\n");
 
@@ -424,7 +424,9 @@ static int pinmux_show(void)
 		unsigned long mux;
 		unsigned long pupd;
 
-		snprintf(pg_name, sizeof(pg_name), "%s",
+		printk(KERN_INFO "[%d] %s", i, pingroups[i].name);
+#if 0
+		/*snprintf(pg_name, sizeof(pg_name), "%s",
 			 pingroups[i].name);
 
 		if (pingroups[i].mux_reg < 0) {
@@ -456,6 +458,7 @@ static int pinmux_show(void)
 			snprintf(pg_tri_name, sizeof(pg_tri_name), "TEGRA_TRI_%s", tri_name(tri));
 		}
 		printk(KERN_INFO "pICS_: %s; %s; %s; %s", pg_name, pg_mux_name, pg_pupd_name, pg_tri_name);
+#endif
 	}
 	return 0;
 }
