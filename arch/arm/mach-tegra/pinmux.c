@@ -478,7 +478,7 @@ void tegra_pinmux_config_tristate_table(const struct tegra_pingroup_config *conf
 					tri_name(tristate), err);
 		}
 	}
-	/*pinmux_show();*/
+	pinmux_show();
 }
 
 void tegra_pinmux_set_vddio_tristate(tegra_vddio_t vddio,
