@@ -1133,15 +1133,16 @@ static noinline void __init tegra_setup_spi(void)
 {
 
 	int rc;
-
-	printk(KERN_INFO "pICS_%s: Starting...",__func__);
-#if 0
 	const NvU32 *spi_mux;
 	const NvU32 *sflash_mux;
 	NvU32 spi_mux_nr;
 	NvU32 sflash_mux_nr;
 	int i;
 
+
+	printk(KERN_INFO "pICS_%s: Starting...",__func__);
+
+	
 	NvOdmQueryPinMux(NvOdmIoModule_Spi, &spi_mux, &spi_mux_nr);
 	NvOdmQueryPinMux(NvOdmIoModule_Sflash, &sflash_mux, &sflash_mux_nr);
 
@@ -1183,15 +1184,15 @@ static noinline void __init tegra_setup_spi(void)
 				__func__, pdev->name, pdev->id);
 			//continue;
 		}
-#endif
 		
 		printk(KERN_INFO "pICS_%s: registering SPI slave %s.%d\n",__func__, tegra_spi_devices[0].name, tegra_spi_devices[0].id);
-		rc = platform_device_register(&tegra_spi_devices[0]);
+		/*rc = platform_device_register(&tegra_spi_devices[0]);*/
+		rc = platform_device_register(pdev);
 		if (rc) {
 			pr_err("%s: registration of %s.%d failed\n",
-			       __func__, tegra_spi_devices[0].name, tegra_spi_devices[0].id);
+			       __func__, pdev->name, pdev->id);
 		}
-	/*}*/
+	}
 
 	printk(KERN_INFO "pICS_%s: Ending...",__func__);
 }
