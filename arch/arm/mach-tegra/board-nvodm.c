@@ -546,6 +546,19 @@ static void __init tegra_setup_hsuart(void)
 	tegra_uart_platform[3].pinmux = tegra_pinmux_get("tegra_uart.3", 2, &tegra_uart_platform[3].nr_pins);
 	tegra_uart_platform[4].pinmux = tegra_pinmux_get("tegra_uart.4", 4, &tegra_uart_platform[3].nr_pins);
 
+	if (platform_device_register(&tegra_uart[0])) 
+			pr_err("%s: failed to register %s.%d\n",
+			       __func__, tegra_uart[0].name, tegra_uart[0].id);
+	if (platform_device_register(&tegra_uart[2])) 
+			pr_err("%s: failed to register %s.%d\n",
+			       __func__, tegra_uart[2].name, tegra_uart[2].id);
+	if (platform_device_register(&tegra_uart[3])) 
+			pr_err("%s: failed to register %s.%d\n",
+			       __func__, tegra_uart[3].name, tegra_uart[3].id);
+	if (platform_device_register(&tegra_uart[4])) 
+			pr_err("%s: failed to register %s.%d\n",
+			       __func__, tegra_uart[4].name, tegra_uart[4].id);
+
 	printk(KERN_INFO "pICS_%s: Ending...",__func__);
 
 }
@@ -797,6 +810,7 @@ struct tegra_kbc_plat tegra_kbc_platform;
 
 static noinline void __init tegra_setup_kbc(void)
 {
+
 	struct tegra_kbc_plat *pdata = &tegra_kbc_platform;
 	const NvOdmPeripheralConnectivity *conn;
 	NvOdmPeripheralSearch srch_attr = NvOdmPeripheralSearch_IoModule;
@@ -906,13 +920,15 @@ static noinline void __init tegra_setup_kbc(void)
 					sc = vkeys[k]->pVirtualKeyTable[sc];
 					if (!sc) continue;
 					pdata->keymap[kbc_indexof(i,j)]=sc;
-					printk(KERN_INFO "pICS_%s: pdata->keymap[kbc_indexof(%d,%d)] = %lu",__func__, i, j, sc);
+					printk(KERN_INFO "pICS_%s: pdata->keymap[kbc_indexof(%d,%d)=%d] = %lu",__func__, i, j, kbc_indexof(i,j), sc);
 				}
 
                         }
 		}
 	}
 #if 0
+	struct wake_row = {0,1,1,2,2};
+	struct wake_col = {0,0,1,0,1};
 	struct tegra_kbc_plat *pdata = &tegra_kbc_platform;
 	const NvOdmPeripheralConnectivity *conn;
 	NvOdmPeripheralSearch srch_attr = NvOdmPeripheralSearch_IoModule;
@@ -951,72 +967,39 @@ static noinline void __init tegra_setup_kbc(void)
 
 	}
 
-	NvOdmKbcGetParameter(NvOdmKbcParameter_DebounceTime, 1, &temp);
-
 	/* debounce time is reported from ODM in terms of clock ticks. */
-	pdata->debounce_cnt = temp;
-	printk(KERN_INFO "pICS_%s: pdata->debounce_cnt = %u",__func__, pdata->debounce_cnt);
+	pdata->debounce_cnt = 10;
 
 	/* repeat cycle is reported from ODM in milliseconds,
 	 * but needs to be specified in 32KHz ticks */
-	NvOdmKbcGetParameter(NvOdmKbcParameter_RepeatCycleTime, 1, &temp);
-	pdata->repeat_cnt = temp * 32;
-	printk(KERN_INFO "pICS_%s: pdata->repeat_cnt = %u",__func__, pdata->repeat_cnt);	
+	pdata->repeat_cnt = 1024;
 
-	temp = NvOdmPeripheralEnumerate(&srch_attr, &srch_val, 1, &guid, 1);
-	if (!temp) {
-		kfree(pdata->keymap);
-		pr_err("%s: failed to find keyboard module\n", __func__);
-		return;
-	}
-	conn = NvOdmPeripheralGetGuid(guid);
-	if (!conn) {
-		kfree(pdata->keymap);
-		pr_err("%s: failed to find keyboard\n", __func__);
-		return;
-	}
-
-	for (i=0; i<conn->NumAddress; i++) {
-		NvU32 addr = conn->AddressList[i].Address;
-
-		if (conn->AddressList[i].Interface!=NvOdmIoModule_Kbd) continue;
-
-		if (conn->AddressList[i].Instance) {
-			pdata->pin_cfg[addr].num = cols++;
-			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].num = %u",__func__, addr, pdata->pin_cfg[addr].num);
-			pdata->pin_cfg[addr].is_col = true;
-			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].is_col = true",__func__, addr);
-		} else {
-			pdata->pin_cfg[addr].num = rows++;
-			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].num = %u",__func__, addr, pdata->pin_cfg[addr].num);
-			pdata->pin_cfg[addr].is_row = true;
-			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].is_row = true",__func__, addr);
-		}
-	}
+	pdata->pin_cfg[0].num = 0;
+	pdata->pin_cfg[0].is_row = true;
+	pdata->pin_cfg[1].num = 1;
+	pdata->pin_cfg[1].is_row = true;
+	pdata->pin_cfg[2].num = 2;
+	pdata->pin_cfg[2].is_row = true;
+	pdata->pin_cfg[16].num = 0;
+	pdata->pin_cfg[16].is_col = true;
+	pdata->pin_cfg[17].num = 1;
+	pdata->pin_cfg[17].is_col = true;
+	pdata->pin_cfg[18].num = 2;
+	pdata->pin_cfg[18].is_col = true;
 
 	for (i=0; i<KBC_MAX_KEY; i++) {
 		pdata->keymap[i] = -1;
-		printk(KERN_INFO "pICS_%s: pdata->keymap[%d] = -1",__func__, i);
 	}
-	vnum = NvOdmKbcKeyMappingGetVirtualKeyMappingList(&vkeys);
-	printk(KERN_INFO "pICS_%s: vnum = %d",__func__, vnum);
-	for (i=0; i<rows; i++) {
-		for (j=0; j<cols; j++) {
-			NvU32 sc = NvOdmKbcGetKeyCode(i, j, rows, cols);
-			printk(KERN_INFO "pICS_%s: sc = %lu",__func__, sc);
-			for (k=0; k<vnum; k++) {
-				if (sc >= vkeys[k]->StartScanCode &&
-				    sc <= vkeys[k]->EndScanCode) {
-					sc -= vkeys[k]->StartScanCode;
-					sc = vkeys[k]->pVirtualKeyTable[sc];
-					if (!sc) continue;
-					pdata->keymap[kbc_indexof(i,j)]=sc;
-					printk(KERN_INFO "pICS_%s: pdata->keymap[kbc_indexof(%d,%d)] = %lu",__func__, i, j, sc);
-				}
 
-                        }
-		}
-	}
+	pdata->keymap[??]=115;
+	pdata->keymap[??]=211;
+	pdata->keymap[??]=139;
+	pdata->keymap[??]=114;
+	pdata->keymap[??]=212;
+	pdata->keymap[??]=102;
+	pdata->keymap[??]=152;
+	pdata->keymap[??]=217;
+	pdata->keymap[??]=158;
 #endif
 }
 #else
@@ -1041,12 +1024,14 @@ static noinline void __init tegra_setup_rfkill(void)
 	lbee9qmb_platform.gpio_pwr=-1;
 	if ((con = NvOdmPeripheralGetGuid(NV_ODM_GUID('l','b','e','e','9','q','m','b'))))
 	{
+		printk(KERN_INFO "pICS_%s: lbee9qmb",__func__);
 		for (i=0; i<con->NumAddress; i++) {
 			if (con->AddressList[i].Interface == NvOdmIoModule_Gpio
 					&& con->AddressList[i].Purpose == BT_RESET ){
 				int nr_gpio = con->AddressList[i].Instance * 8 +
 					con->AddressList[i].Address;
 				lbee9qmb_platform.gpio_reset = nr_gpio;
+				printk(KERN_INFO "pICS_%s: lbee9qmb_platform.gpio_reset = %d",__func__, lbee9qmb_platform.gpio_reset);
 				if (platform_device_register(&lbee9qmb_device))
 					pr_err("%s: registration failed\n", __func__);
 				return;
@@ -1056,18 +1041,21 @@ static noinline void __init tegra_setup_rfkill(void)
 	else if ((con = NvOdmPeripheralGetGuid(NV_ODM_GUID('b','c','m','_','4','3','2','9'))))
 	{
 		int nr_gpio;
+		printk(KERN_INFO "pICS_%s: bcm_4329",__func__);
 		for (i=0; i<con->NumAddress; i++) {
                         if (con->AddressList[i].Interface == NvOdmIoModule_Gpio
 						&& con->AddressList[i].Purpose == BT_RESET){
 					nr_gpio = con->AddressList[i].Instance * 8 +
 						con->AddressList[i].Address;
 					lbee9qmb_platform.gpio_reset = nr_gpio;
+					printk(KERN_INFO "pICS_%s: bcm_4329_platform.gpio_reset = %d",__func__, lbee9qmb_platform.gpio_reset);
 				}
 			else if (con->AddressList[i].Interface == NvOdmIoModule_Gpio
 						&& con->AddressList[i].Purpose == BT_SHUTDOWN ){
 					nr_gpio = con->AddressList[i].Instance * 8 +
 						 con->AddressList[i].Address;
 					lbee9qmb_platform.gpio_pwr = nr_gpio;
+					printk(KERN_INFO "pICS_%s: bcm_4329_platform.gpio_pwr = %d",__func__, lbee9qmb_platform.gpio_pwr);
 				}
 		}
 		lbee9qmb_platform.delay=200;
@@ -1143,6 +1131,11 @@ static struct platform_device tegra_spi_devices[] = {
 };
 static noinline void __init tegra_setup_spi(void)
 {
+
+	int rc;
+
+	printk(KERN_INFO "pICS_%s: Starting...",__func__);
+#if 0
 	const NvU32 *spi_mux;
 	const NvU32 *sflash_mux;
 	NvU32 spi_mux_nr;
@@ -1158,12 +1151,14 @@ static noinline void __init tegra_setup_spi(void)
 
 		const NvOdmQuerySpiDeviceInfo *info = NULL;
 		NvU32 mux = 0;
-		int rc;
+		
 
 		if (plat->is_slink && pdev->id<spi_mux_nr)
 			mux = spi_mux[pdev->id];
 		else if (sflash_mux_nr && !plat->is_slink)
 			mux = sflash_mux[0];
+
+		printk(KERN_INFO "pICS_%s: mux = %lu",__func__, mux);
 
 		if (!mux)
 			continue;
@@ -1188,13 +1183,17 @@ static noinline void __init tegra_setup_spi(void)
 				__func__, pdev->name, pdev->id);
 			//continue;
 		}
-
-		rc = platform_device_register(pdev);
+#endif
+		
+		printk(KERN_INFO "pICS_%s: registering SPI slave %s.%d\n",__func__, tegra_spi_devices[0].name, tegra_spi_devices[0].id);
+		rc = platform_device_register(&tegra_spi_devices[0]);
 		if (rc) {
 			pr_err("%s: registration of %s.%d failed\n",
-			       __func__, pdev->name, pdev->id);
+			       __func__, tegra_spi_devices[0].name, tegra_spi_devices[0].id);
 		}
-	}
+	/*}*/
+
+	printk(KERN_INFO "pICS_%s: Ending...",__func__);
 }
 #else
 static void tegra_setup_spi(void) { }
@@ -1308,16 +1307,24 @@ static noinline void __init tegra_setup_i2c(void)
 				continue;
 			}
 		}
-
+		printk(KERN_INFO "pICS_%s: tegra_i2c_devices[%d].name = %s.%d",__func__, i, dev->name, dev->id);
 		if (plat->is_dvc) {
+			printk(KERN_INFO "pICS_%s: if (plat->is_dvc)", __func__);
 			mux = (odm_mux_i2cp_nr) ? odm_mux_i2cp[0] : 0;
+			printk(KERN_INFO "pICS_%s: tegra_i2c_platform[%d], mux = %lu",__func__, i, mux);
 			clk = (odm_clk_i2cp_nr) ? odm_clk_i2cp[0] : 100;
+			printk(KERN_INFO "pICS_%s: tegra_i2c_platform[%d], clk = %lu",__func__, i, clk);
 		} else if (dev->id < odm_mux_i2c_nr) {
+			printk(KERN_INFO "pICS_%s: if (dev->id < odm_mux_i2c_nr)", __func__);
 			mux = odm_mux_i2c[dev->id];
+			printk(KERN_INFO "pICS_%s: tegra_i2c_platform[%d], mux = %lu",__func__, i, mux);
 			clk = (dev->id < odm_clk_i2c_nr) ? odm_clk_i2c[dev->id] : 100;
+			printk(KERN_INFO "pICS_%s: tegra_i2c_platform[%d], clk = %lu",__func__, i, clk);
 		} else {
 			mux = 0;
+			printk(KERN_INFO "pICS_%s: tegra_i2c_platform[%d], mux = %lu",__func__, i, mux);
 			clk = 0;
+			printk(KERN_INFO "pICS_%s: tegra_i2c_platform[%d], clk = %lu",__func__, i, clk);
 		}
 
 		if (!mux)
@@ -1333,6 +1340,7 @@ static noinline void __init tegra_setup_i2c(void)
 #warning Hardcoding i2c bus speeds to 400Khz due to nvidia bug 705733
 		if (clk)
 			plat->bus_clk[0] = 400*1000;
+			printk(KERN_INFO "pICS_%s: tegra_i2c_platform[%d].bus_clk[0] = %lu",__func__, i, plat->bus_clk[0]);
 
 		if (platform_device_register(dev))
 			pr_err("%s: failed to register %s.%d\n",
@@ -1363,6 +1371,7 @@ static noinline void __init tegra_setup_w1(void)
 		return;
 	}
 	tegra_w1_platform.pinmux = pinmux[0];
+	printk(KERN_INFO "pICS_%s: tegra_w1_platform.pinmux = %lu",__func__, pinmux[0]);
 	if (platform_device_register(&tegra_w1_device)) {
 		pr_err("%s: failed to register %s.%d\n",
 		       __func__, tegra_w1_device.name, tegra_w1_device.id);
@@ -1423,6 +1432,7 @@ static void __init tegra_setup_suspend(void)
 	NvOdmPmuProperty pmu;
 	NvBool has_pmu;
 	NvU32 nr_wake;
+	unsigned int pad;
 
 	lp = NvOdmQueryLowestSocPowerState();
 	w = NvOdmQueryGetWakeupPadTable(&nr_wake);
@@ -1435,55 +1445,80 @@ static void __init tegra_setup_suspend(void)
 	}
 
 	if (lp->LowestPowerState==NvOdmSocPowerState_Suspend) {
+		printk(KERN_INFO "pICS_%s: if (lp->LowestPowerState==NvOdmSocPowerState_Suspend)",__func__);
 		plat->dram_suspend = true;
+		printk(KERN_INFO "pICS_%s: tegra_suspend_platform.dram_suspend = true;",__func__);
 		plat->core_off = false;
+		printk(KERN_INFO "pICS_%s: tegra_suspend_platform.core_off = false;",__func__);
 	} else if (lp->LowestPowerState==NvOdmSocPowerState_DeepSleep) {
+		printk(KERN_INFO "pICS_%s: if (lp->LowestPowerState==NvOdmSocPowerState_DeepSleep)",__func__);
 		plat->dram_suspend = true;
+		printk(KERN_INFO "pICS_%s: tegra_suspend_platform.dram_suspend = true;",__func__);
 		plat->core_off = true;
+		printk(KERN_INFO "pICS_%s: tegra_suspend_platform.core_off = true;",__func__);
 	}
 
 	if (has_pmu) {
 		plat->cpu_timer = pmu.CpuPowerGoodUs;
+		printk(KERN_INFO "pICS_%s: tegra_suspend_platform.cpu_timer = [%lu]",__func__, plat->cpu_timer);
 		plat->cpu_off_timer = pmu.CpuPowerOffUs;
+		printk(KERN_INFO "pICS_%s: tegra_suspend_platform.cpu_off_timer = [%lu]",__func__, plat->cpu_off_timer);
 		plat->core_timer = pmu.PowerGoodCount;
+		printk(KERN_INFO "pICS_%s: tegra_suspend_platform.core_timer = [%lu]",__func__, plat->core_timer);
 		plat->core_off_timer = pmu.PowerOffCount;
-
+		printk(KERN_INFO "pICS_%s: tegra_suspend_platform.core_off_timer = [%lu]",__func__, plat->core_off_timer);
 		plat->separate_req = !pmu.CombinedPowerReq;
+		printk(KERN_INFO "pICS_%s: tegra_suspend_platform.separate_req = [%d]",__func__, plat->separate_req);
 		plat->corereq_high =
 			(pmu.CorePowerReqPolarity ==
 			 NvOdmCorePowerReqPolarity_High);
+		printk(KERN_INFO "pICS_%s: tegra_suspend_platform.corereq_high = [%d]",__func__, plat->corereq_high);
 		plat->sysclkreq_high =
 			(pmu.SysClockReqPolarity ==
 			 NvOdmCorePowerReqPolarity_High);
+		printk(KERN_INFO "pICS_%s: tegra_suspend_platform.sysclkreq_high = [%d]",__func__, plat->sysclkreq_high);
 	}
 
 	if (!w || !nr_wake)
 		goto do_register;
 
+	printk(KERN_INFO "pICS_%s: plat->wake_enb = 0;...",__func__);
+
 	plat->wake_enb = 0;
 	plat->wake_low = 0;
 	plat->wake_high = 0;
 	plat->wake_any = 0;
-
+	
+	printk(KERN_INFO "pICS_%s: nr_wake = [%d]",__func__, nr_wake);
 	while (nr_wake--) {
-		unsigned int pad = w->WakeupPadNumber;
-		if (pad < ARRAY_SIZE(wakepad_irq) && w->enable)
+		printk(KERN_INFO "pICS_%s: w = %d)",__func__, w);
+		pad = w->WakeupPadNumber;
+		printk(KERN_INFO "pICS_%s: pad = %u)",__func__, pad); /* ICSPROBLEM here it might be */
+		if (pad < ARRAY_SIZE(wakepad_irq) && w->enable) {
 			enable_irq_wake(wakepad_irq[pad]);
-
+			printk(KERN_INFO "pICS_%s: enable_irq_wake(wakepad_irq[pad]=%d)",__func__, wakepad_irq[pad]);
+		}
 		if (w->enable) {
 			plat->wake_enb |= (1 << pad);
-
-			if (w->Polarity == NvOdmWakeupPadPolarity_Low)
+			printk(KERN_INFO "pICS_%s: tegra_suspend_platform.wake_enb = %lu",__func__, plat->wake_enb);
+			if (w->Polarity == NvOdmWakeupPadPolarity_Low) {
 				plat->wake_low |= (1 << pad);
-			else if (w->Polarity == NvOdmWakeupPadPolarity_High)
+				printk(KERN_INFO "pICS_%s: tegra_suspend_platform.wake_low = %lu",__func__, plat->wake_low);
+			}
+			else if (w->Polarity == NvOdmWakeupPadPolarity_High) {
 				plat->wake_high |= (1 << pad);
-			else if (w->Polarity == NvOdmWakeupPadPolarity_AnyEdge)
+				printk(KERN_INFO "pICS_%s: tegra_suspend_platform.wake_high = %lu",__func__, plat->wake_high);
+			}
+			else if (w->Polarity == NvOdmWakeupPadPolarity_AnyEdge) {
 				plat->wake_any |= (1 << pad);
+				printk(KERN_INFO "pICS_%s: tegra_suspend_platform.wake_any = %lu",__func__, plat->wake_any);
+			}
 		}
 		w++;
 	}
 
 do_register:
+	printk(KERN_INFO "pICS_%s: tegra_init_suspend(tegra_suspend_platform)",__func__);
 	tegra_init_suspend(plat);
 	tegra_init_idle(plat);
 }
@@ -1491,6 +1526,7 @@ do_register:
 static int tegra_reboot_notify(struct notifier_block *nb,
 				unsigned long event, void *data)
 {
+	printk(KERN_INFO "pICS_%s: event = [%lu]",__func__, event);
 	switch (event) {
 	case SYS_RESTART:
 	case SYS_HALT:
@@ -1518,6 +1554,7 @@ static void __init tegra_setup_reboot(void)
 
 static int __init tegra_setup_data(void)
 {
+	printk(KERN_INFO "pICS_%s: empty list of devices",__func__);
 	platform_add_devices(nvodm_devices, ARRAY_SIZE(nvodm_devices));
 	return 0;
 }
@@ -1546,12 +1583,14 @@ void __init tegra_setup_nvodm(bool standard_i2c, bool standard_spi)
 
 void tegra_board_nvodm_suspend(void)
 {
+	printk(KERN_INFO "pICS_%s",__func__);
 	if (console_suspend_enabled)
 		tegra_debug_port_suspend();
 }
 
 void tegra_board_nvodm_resume(void)
 {
+	printk(KERN_INFO "pICS_%s",__func__);
 	if (console_suspend_enabled)
 		tegra_debug_port_resume();
 }
