@@ -412,49 +412,19 @@ void tegra_pinmux_config_pinmux_table(const struct tegra_pingroup_config *config
 static int pinmux_show(void)
 {
 	int i;
-/*	char pg_name[16];
-	char pg_mux_name[16];
+	char pg_name[5];
+	char pg_mux_name[24];
 	char pg_pupd_name[16];
-	char pg_tri_name[16];*/
+	char pg_tri_name[16];
 
-	pr_info("pICS_PINMUX TABLE (PINGROUP;MUX;PUPD;TRISTATE;)\n");
+	printk(KERN_INFO "pICS_PINMUX TABLE (PINGROUP;MUX;PUPD;TRISTATE)");
 
 	for (i = 0; i < TEGRA_MAX_PINGROUP; i++) {
 		unsigned long tri;
 		unsigned long mux;
 		unsigned long pupd;
 
-		pr_info("[%d] %s", i, pingroups[i].name);
-
-		if (pingroups[i].mux_reg < 0) {
-			pr_info("[%d] NONE", i);
-		} else {
-			mux = (pg_readl(pingroups[i].mux_reg) >>
-			       pingroups[i].mux_bit) & 0x3;
-			if (pingroups[i].funcs[mux] == TEGRA_MUX_RSVD) {
-				pr_info("[%d] TEGRA_MUX_RSVD%1lu", i, mux+1);
-			} else {
-				pr_info("[%d] TEGRA_MUX_%s", i, tegra_mux_names[pingroups[i].funcs[mux]]);
-			}
-		}
-		/*if (pingroups[i].mux_reg < 0) {
-			pr_info("[%d] TEGRA_PUPD_NORMAL", i);
-		} else {
-			pupd = (pg_readl(pingroups[i].pupd_reg) >>
-				pingroups[i].pupd_bit) & 0x3;
-			pr_info("[%d] TEGRA_PUPD_%s",i, pupd_name(pupd));
-		}*/
-
-		if (pingroups[i].tri_reg < 0) {
-			pr_info("[%d] TEGRA_TRI_NORMAL", i);
-		} else {
-			tri = (pg_readl(pingroups[i].tri_reg) >>
-			       pingroups[i].tri_bit) & 0x1;
-
-			pr_info("[%d] TEGRA_TRI_%s \n", tri_name(tri));
-		}
-#if 0
-		/*snprintf(pg_name, sizeof(pg_name), "%s",
+		snprintf(pg_name, sizeof(pg_name), "%s",
 			 pingroups[i].name);
 
 		if (pingroups[i].mux_reg < 0) {
@@ -465,28 +435,30 @@ static int pinmux_show(void)
 			if (pingroups[i].funcs[mux] == TEGRA_MUX_RSVD) {
 				snprintf(pg_mux_name, sizeof(pg_mux_name), "TEGRA_MUX_RSVD%1lu", mux+1);
 			} else {
-				/*snprintf(pg_mux_name, sizeof(pg_mux_name), "TEGRA_MUX_%s", tegra_mux_names[pingroups[i].funcs[mux]]);*/
+				snprintf(pg_mux_name, sizeof(pg_mux_name), "TEGRA_MUX_%s", tegra_mux_names[pingroups[i].funcs[mux]]);
 			}
 		}
 
 		if (pingroups[i].mux_reg < 0) {
 			snprintf(pg_pupd_name, sizeof(pg_pupd_name), "TEGRA_PUPD_NORMAL");
-		} else {
+		} /*else {
 			pupd = (pg_readl(pingroups[i].pupd_reg) >>
 				pingroups[i].pupd_bit) & 0x3;
 			snprintf(pg_pupd_name, sizeof(pg_pupd_name), "TEGRA_PUPD_%s", pupd_name(pupd));
-		}
+		}*/ else snprintf(pg_pupd_name, sizeof(pg_pupd_name), "PROBLEM");
 
 		if (pingroups[i].tri_reg < 0) {
 			snprintf(pg_tri_name, sizeof(pg_tri_name), "TEGRA_TRI_NORMAL");
-		} else {
+		} else  { 
+			snprintf(pg_tri_name, sizeof(pg_tri_name), "PROBLEM");
+		}
+		/*else {
 			tri = (pg_readl(pingroups[i].tri_reg) >>
 			       pingroups[i].tri_bit) & 0x1;
 
 			snprintf(pg_tri_name, sizeof(pg_tri_name), "TEGRA_TRI_%s", tri_name(tri));
-		}
+		}*/ 
 		printk(KERN_INFO "pICS_: %s; %s; %s; %s", pg_name, pg_mux_name, pg_pupd_name, pg_tri_name);
-#endif
 	}
 	return 0;
 }
