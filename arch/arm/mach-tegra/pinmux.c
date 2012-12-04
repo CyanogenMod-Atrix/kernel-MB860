@@ -458,7 +458,7 @@ void pinmux_show(void)
 
 	printk(KERN_INFO "pICS_PINMUX TABLE (PINGROUP;VDDIO;MUX;PUPD;TRISTATE)");
 	
-	spin_lock_irqsave(&mux_lock, flags);
+/*	spin_lock_irqsave(&mux_lock, flags);*/
 
 	for (i = 0; i < TEGRA_MAX_PINGROUP; i++) {
 #if 0
