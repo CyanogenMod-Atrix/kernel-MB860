@@ -1159,7 +1159,7 @@ static noinline void __init tegra_setup_spi(void)
 		else if (sflash_mux_nr && !plat->is_slink)
 			mux = sflash_mux[0];
 
-		printk(KERN_INFO "pICS_%s: mux = %lu",__func__, mux);
+		printk(KERN_INFO "pICS_%s: tegra_spi_devices[%d] mux = %lu",__func__, i, mux);
 
 		if (!mux)
 			continue;
@@ -1185,7 +1185,7 @@ static noinline void __init tegra_setup_spi(void)
 			//continue;
 		}
 		
-		printk(KERN_INFO "pICS_%s: registering SPI slave %s.%d\n",__func__, tegra_spi_devices[0].name, tegra_spi_devices[0].id);
+		printk(KERN_INFO "pICS_%s: registering SPI device[%d] %s.%d\n",__func__, i, tegra_spi_devices[0].name, tegra_spi_devices[0].id);
 		/*rc = platform_device_register(&tegra_spi_devices[0]);*/
 		rc = platform_device_register(pdev);
 		if (rc) {

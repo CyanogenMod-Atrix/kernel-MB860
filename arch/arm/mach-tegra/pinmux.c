@@ -499,7 +499,7 @@ void tegra_pinmux_config_tristate_table(const struct tegra_pingroup_config *conf
 					tri_name(tristate), err);
 		}
 	}
-	/*pinmux_show();*/
+	pinmux_show();
 }
 
 void tegra_pinmux_set_vddio_tristate(tegra_vddio_t vddio,
@@ -544,7 +544,7 @@ void tegra_pinmux_init_pingroups(void)
 	unsigned long mux;
 
 	pingroups = tegra_pinmux_get_pingroups();
-
+#if 0
 	for (i = 0; i < TEGRA_MAX_PINGROUP; i++) {
 		
 		pinmux_conf *pt = &pin_tabl.field[i];
@@ -555,13 +555,13 @@ void tegra_pinmux_init_pingroups(void)
 		if (pingroups[i].mux_reg < 0) {
 			snprintf(pt->pg_mux_name, sizeof(pt->pg_mux_name), "NONE");
 		} else {
-			mux = (pg_readl(pingroups[i].mux_reg) >>
+			/*mux = (pg_readl(pingroups[i].mux_reg) >>
 			       pingroups[i].mux_bit) & 0x3;
 			if (pingroups[i].funcs[mux] == TEGRA_MUX_RSVD) {
 				snprintf(pt->pg_mux_name, sizeof(pt->pg_mux_name), "TEGRA_MUX_RSVD%1lu", mux+1);
 			} else {
 				snprintf(pt->pg_mux_name, sizeof(pt->pg_mux_name), "TEGRA_MUX_%s", tegra_mux_names[pingroups[i].funcs[mux]]);
-			}
+			}*/
 		}
 		if (pingroups[i].mux_reg < 0) {
 			snprintf(pt->pg_pupd_name, sizeof(pt->pg_pupd_name), "TEGRA_PUPD_NORMAL");
@@ -573,6 +573,7 @@ void tegra_pinmux_init_pingroups(void)
 			snprintf(pt->pg_tri_name, sizeof(pt->pg_tri_name), "NOT KNOWN");
 		}
 	}
+#endif
 }
 
 #ifdef	CONFIG_DEBUG_FS
