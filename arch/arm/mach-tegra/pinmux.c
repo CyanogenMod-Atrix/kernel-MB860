@@ -437,12 +437,21 @@ static int pinmux_show(void)
 				pr_info("[%d] TEGRA_MUX_%s", i, tegra_mux_names[pingroups[i].funcs[mux]]);
 			}
 		}
-		if (pingroups[i].mux_reg < 0) {
+		/*if (pingroups[i].mux_reg < 0) {
 			pr_info("[%d] TEGRA_PUPD_NORMAL", i);
 		} else {
 			pupd = (pg_readl(pingroups[i].pupd_reg) >>
 				pingroups[i].pupd_bit) & 0x3;
 			pr_info("[%d] TEGRA_PUPD_%s",i, pupd_name(pupd));
+		}*/
+
+		if (pingroups[i].tri_reg < 0) {
+			pr_info("[%d] TEGRA_TRI_NORMAL", i);
+		} else {
+			tri = (pg_readl(pingroups[i].tri_reg) >>
+			       pingroups[i].tri_bit) & 0x1;
+
+			pr_info("[%d] TEGRA_TRI_%s \n", tri_name(tri));
 		}
 #if 0
 		/*snprintf(pg_name, sizeof(pg_name), "%s",
