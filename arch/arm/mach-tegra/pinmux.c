@@ -445,8 +445,8 @@ void tegra_pinmux_config_pinmux_table(const struct tegra_pingroup_config *config
 		}
 	}
 }
-#if 0
-static int pinmux_show(void)
+
+void pinmux_show(void)
 {
 	int i;
 	unsigned long flags;
@@ -456,11 +456,12 @@ static int pinmux_show(void)
 	char pg_pupd_name[16];
 	char pg_tri_name[16];
 
-	printk(KERN_INFO "pICS_PINMUX TABLE (PINGROUP;MUX;PUPD;TRISTATE)");
+	printk(KERN_INFO "pICS_PINMUX TABLE (PINGROUP;VDDIO;MUX;PUPD;TRISTATE)");
 	
 	spin_lock_irqsave(&mux_lock, flags);
 
 	for (i = 0; i < TEGRA_MAX_PINGROUP; i++) {
+#if 0
 		unsigned long tri;
 		unsigned long mux;
 		unsigned long pupd;
@@ -501,9 +502,12 @@ static int pinmux_show(void)
 		printk(KERN_INFO "pICS_: %s; %s; %s; %s", pg_name, pg_mux_name, pg_pupd_name, pg_tri_name);
 	}
 	spin_unlock_irqrestore(&mux_lock, flags);
-	return 0;
-}
 #endif
+	printk(KERN_INFO "pICS_: %s; %d; %s; %s; %s", pin_tabl.field[i].pg_name, pin_tabl.field[i].vddio, pin_tabl.field[i].pg_mux_name, pin_tabl.field[i].pg_pupd_name, pin_tabl.field[i].pg_tri_name);
+	}
+}
+
+
 void tegra_pinmux_config_tristate_table(const struct tegra_pingroup_config *config,
 					int len, tegra_tristate_t tristate)
 {
@@ -541,7 +545,10 @@ void tegra_pinmux_set_vddio_tristate(tegra_vddio_t vddio,
 				pr_err("pinmux: can't set pingroup %s tristate"
 				       " to %s\n", pingroup_name(pg),
 				       tri_name(tristate));
-			} else snprintf(pin_tabl.field[pg].pg_tri_name, sizeof(pin_tabl.field[pg].pg_tri_name), "%s", tri_name(tristate));
+			} else {
+				snprintf(pin_tabl.field[pg].pg_tri_name, sizeof(pin_tabl.field[pg].pg_tri_name), "%s", tri_name(tristate));
+				pin_tabl.field[pg].vddio = vddio;
+			}
 		}
 	}
 }
