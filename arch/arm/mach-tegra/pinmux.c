@@ -580,7 +580,7 @@ void tegra_pinmux_init_pingroups(void)
 	unsigned long pupd;
 
 	pingroups = tegra_pinmux_get_pingroups();
-
+/*
 	spin_lock_irqsave(&mux_lock, flags);
 
 	for (i = 0; i < TEGRA_MAX_PINGROUP; i++) {
@@ -621,7 +621,7 @@ void tegra_pinmux_init_pingroups(void)
 		
 	}
 	spin_unlock_irqrestore(&mux_lock, flags);
-
+*/
 }
 
 #ifdef	CONFIG_DEBUG_FS

@@ -1633,7 +1633,7 @@ postcore_initcall(tegra_setup_data);
 
 void __init tegra_setup_nvodm(bool standard_i2c, bool standard_spi)
 {
-	pinmux_show();
+/*pinmux_show();*/
 	printk(KERN_INFO "pICS_%s: NvRmGpioOpen(s_hRmGlobal, &s_hGpioGlobal); \n",__func__);
 	NvRmGpioOpen(s_hRmGlobal, &s_hGpioGlobal);
 	tegra_setup_debug_uart();
@@ -1643,7 +1643,7 @@ void __init tegra_setup_nvodm(bool standard_i2c, bool standard_spi)
 	tegra_setup_rfkill();
 	tegra_setup_kbc();
 	tegra_setup_gpio_key();
-	pinmux_show();
+/*	pinmux_show();*/
 	if (standard_i2c)
 		tegra_setup_i2c();
 	if (standard_spi)
@@ -1652,7 +1652,7 @@ void __init tegra_setup_nvodm(bool standard_i2c, bool standard_spi)
 	pm_power_off = tegra_system_power_off;
 	tegra_setup_suspend();
 	tegra_setup_reboot();
-	pinmux_show();
+/*	pinmux_show();*/
 }
 
 void tegra_board_nvodm_suspend(void)
