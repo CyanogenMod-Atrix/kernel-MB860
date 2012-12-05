@@ -580,8 +580,8 @@ void tegra_pinmux_init_pingroups(void)
 	unsigned long pupd;
 
 	pingroups = tegra_pinmux_get_pingroups();
-/*
-	spin_lock_irqsave(&mux_lock, flags);
+
+	
 
 	for (i = 0; i < TEGRA_MAX_PINGROUP; i++) {
 	
@@ -598,30 +598,34 @@ void tegra_pinmux_init_pingroups(void)
 			       pingroups[i].mux_bit) & 0x3;
 			if (pingroups[i].funcs[mux] == TEGRA_MUX_RSVD) {
 				snprintf(pt->pg_mux_name, sizeof(pt->pg_mux_name), "TEGRA_MUX_RSVD%1lu", mux+1);
-			} else {
+			} else { 
 				snprintf(pt->pg_mux_name, sizeof(pt->pg_mux_name), "TEGRA_MUX_%s", tegra_mux_names[pingroups[i].funcs[mux]]);
 			}
 		}
+		
 		if (pingroups[i].mux_reg < 0) {
 			snprintf(pt->pg_pupd_name, sizeof(pt->pg_pupd_name), "TEGRA_PUPD_NORMAL");
 		} else {
-			
+			spin_lock_irqsave(&mux_lock, flags);
 			pupd = (pg_readl(pingroups[i].pupd_reg) >>
 				pingroups[i].pupd_bit) & 0x3;
+			spin_unlock_irqrestore(&mux_lock, flags);
 			snprintf(pt->pg_pupd_name, sizeof(pt->pg_pupd_name), "TEGRA_PUPD_%s", pupd_name(pupd));
 		}
 		if (pingroups[i].tri_reg < 0) {
 			snprintf(pt->pg_tri_name, sizeof(pt->pg_tri_name), "TEGRA_TRI_NORMAL");
 		} else {
+			spin_lock_irqsave(&mux_lock, flags);
 			tri = (pg_readl(pingroups[i].tri_reg) >>
 			       pingroups[i].tri_bit) & 0x1;
+			spin_unlock_irqrestore(&mux_lock, flags);
 			snprintf(pt->pg_tri_name, sizeof(pt->pg_tri_name), "TEGRA_TRI_%s", tri_name(tri));
 		}
 		pt->vddio=pingroups[i].vddio;
 		
 	}
-	spin_unlock_irqrestore(&mux_lock, flags);
-*/
+	
+
 }
 
 #ifdef	CONFIG_DEBUG_FS

@@ -1291,9 +1291,11 @@ static noinline void __init tegra_setup_i2c(void)
 	smbus = NvOdmPeripheralGetGuid(NV_ODM_GUID('I','2','c','S','m','B','u','s'));
 
 	if (smbus) {
+		printk(KERN_INFO "pICS_%s: if (smbus) ...", __func__);
 		unsigned int j;
 		smbus_addr = smbus->AddressList;
 		for (j=0; j<smbus->NumAddress; j++, smbus_addr++) {
+			printk(KERN_INFO "pICS_%s: smbus->NumAddress = %u", __func__, j);
 			if ((smbus_addr->Interface == NvOdmIoModule_I2c) ||
 			    (smbus_addr->Interface == NvOdmIoModule_I2c_Pmu))
 				break;
