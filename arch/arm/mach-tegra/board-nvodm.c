@@ -810,7 +810,7 @@ struct tegra_kbc_plat tegra_kbc_platform;
 
 static noinline void __init tegra_setup_kbc(void)
 {
-
+#if 0
 	struct tegra_kbc_plat *pdata = &tegra_kbc_platform;
 	const NvOdmPeripheralConnectivity *conn;
 	NvOdmPeripheralSearch srch_attr = NvOdmPeripheralSearch_IoModule;
@@ -926,81 +926,62 @@ static noinline void __init tegra_setup_kbc(void)
                         }
 		}
 	}
-#if 0
-	struct wake_row = {0,1,1,2,2};
-	struct wake_col = {0,0,1,0,1};
-	struct tegra_kbc_plat *pdata = &tegra_kbc_platform;
-	const NvOdmPeripheralConnectivity *conn;
-	NvOdmPeripheralSearch srch_attr = NvOdmPeripheralSearch_IoModule;
-	const struct NvOdmKeyVirtTableDetail **vkeys;
-	NvU32 srch_val = NvOdmIoModule_Kbd;
-	NvU32 temp;
-	NvU64 guid;
-	NvU32 i, j, k;
-	NvU32 cols=0;
-	NvU32 rows=0;
-	NvU32 *wake_row;
-	NvU32 *wake_col;
-	NvU32 wake_num;
-	NvU32 vnum;
+#endif
+	int i;	
 
-	pdata->keymap = kzalloc(sizeof(*pdata->keymap)*KBC_MAX_KEY, GFP_KERNEL);
-	if (!pdata->keymap) {
+	tegra_kbc_platform.keymap = kzalloc(sizeof(*tegra_kbc_platform.keymap)*KBC_MAX_KEY, GFP_KERNEL);
+	if (!tegra_kbc_platform.keymap) {
 		pr_err("%s: out of memory for key mapping\n", __func__);
 		return;
 	}
-	pdata->wake_cnt = 5; /* 0:wake on any key >1:wake on wake_cfg */
-	pdata->wake_cfg = kzalloc(sizeof(*pdata->wake_cfg)*pdata->wake_cnt,
+	tegra_kbc_platform.wake_cnt = 5; /* 0:wake on any key >1:wake on wake_cfg */
+	tegra_kbc_platform.wake_cfg = kzalloc(sizeof(*tegra_kbc_platform.wake_cfg)*tegra_kbc_platform.wake_cnt,
 			GFP_KERNEL);
-	if (pdata->wake_cfg) {
-			for (i=0; i<wake_num; i++) {
-				pdata->wake_cfg[i].row=wake_row[i];
-				printk(KERN_INFO "pICS_%s: pdata->wake_cfg[%d].row = %d",__func__, i, wake_row[i]);
-				pdata->wake_cfg[i].col=wake_col[i];
-				printk(KERN_INFO "pICS_%s: pdata->wake_cfg[%d].col = %d",__func__, i, wake_col[i]);
-			}
-		} else
-			pr_err("disabling wakeup key filtering due to "
-				"out-of-memory error\n");
-		} else
-			pr_warning("no wakeup keys are configured \n");
-
-	}
+	
+	tegra_kbc_platform.wake_cfg[0].row = 0;
+	tegra_kbc_platform.wake_cfg[0].col = 0;
+	tegra_kbc_platform.wake_cfg[1].row = 1;
+	tegra_kbc_platform.wake_cfg[1].col = 0;
+	tegra_kbc_platform.wake_cfg[2].row = 1;
+	tegra_kbc_platform.wake_cfg[2].col = 1;
+	tegra_kbc_platform.wake_cfg[3].row = 2;
+	tegra_kbc_platform.wake_cfg[4].row = 2;
+	tegra_kbc_platform.wake_cfg[4].col = 1;
 
 	/* debounce time is reported from ODM in terms of clock ticks. */
-	pdata->debounce_cnt = 10;
+	tegra_kbc_platform.debounce_cnt = 10;
 
 	/* repeat cycle is reported from ODM in milliseconds,
 	 * but needs to be specified in 32KHz ticks */
-	pdata->repeat_cnt = 1024;
+	tegra_kbc_platform.repeat_cnt = 1024;
 
-	pdata->pin_cfg[0].num = 0;
-	pdata->pin_cfg[0].is_row = true;
-	pdata->pin_cfg[1].num = 1;
-	pdata->pin_cfg[1].is_row = true;
-	pdata->pin_cfg[2].num = 2;
-	pdata->pin_cfg[2].is_row = true;
-	pdata->pin_cfg[16].num = 0;
-	pdata->pin_cfg[16].is_col = true;
-	pdata->pin_cfg[17].num = 1;
-	pdata->pin_cfg[17].is_col = true;
-	pdata->pin_cfg[18].num = 2;
-	pdata->pin_cfg[18].is_col = true;
+	tegra_kbc_platform.pin_cfg[0].num = 0;
+	tegra_kbc_platform.pin_cfg[0].is_row = true;
+	tegra_kbc_platform.pin_cfg[1].num = 1;
+	tegra_kbc_platform.pin_cfg[1].is_row = true;
+	tegra_kbc_platform.pin_cfg[2].num = 2;
+	tegra_kbc_platform.pin_cfg[2].is_row = true;
+	tegra_kbc_platform.pin_cfg[16].num = 0;
+	tegra_kbc_platform.pin_cfg[16].is_col = true;
+	tegra_kbc_platform.pin_cfg[17].num = 1;
+	tegra_kbc_platform.pin_cfg[17].is_col = true;
+	tegra_kbc_platform.pin_cfg[18].num = 2;
+	tegra_kbc_platform.pin_cfg[18].is_col = true;
 
 	for (i=0; i<KBC_MAX_KEY; i++) {
-		pdata->keymap[i] = -1;
+		tegra_kbc_platform.keymap[i] = -1;
 	}
 
-	pdata->keymap[??]=115;
-	pdata->keymap[??]=211;
-	pdata->keymap[??]=139;
-	pdata->keymap[??]=114;
-	pdata->keymap[??]=212;
-	pdata->keymap[??]=102;
-	pdata->keymap[??]=152;
-	pdata->keymap[??]=217;
-	pdata->keymap[??]=158;
-#endif
+	tegra_kbc_platform.keymap[0]=115;
+	tegra_kbc_platform.keymap[1]=114;
+	tegra_kbc_platform.keymap[2]=152;
+	tegra_kbc_platform.keymap[16]=211;
+	tegra_kbc_platform.keymap[17]=212;
+	tegra_kbc_platform.keymap[18]=217;
+	tegra_kbc_platform.keymap[32]=139;
+	tegra_kbc_platform.keymap[33]=102;
+	tegra_kbc_platform.keymap[34]=158;
+
 }
 #else
 static void tegra_setup_kbc(void) { }
@@ -1018,10 +999,13 @@ static struct platform_device lbee9qmb_device = {
 };
 static noinline void __init tegra_setup_rfkill(void)
 {
+
+#if 0
 	const NvOdmPeripheralConnectivity *con;
 	unsigned int i;
 	lbee9qmb_platform.delay=5;
 	lbee9qmb_platform.gpio_pwr=-1;
+
 	if ((con = NvOdmPeripheralGetGuid(NV_ODM_GUID('l','b','e','e','9','q','m','b'))))
 	{
 		printk(KERN_INFO "pICS_%s: lbee9qmb",__func__);
@@ -1064,6 +1048,15 @@ static noinline void __init tegra_setup_rfkill(void)
                 return;
         }
         return;
+#endif
+
+	lbee9qmb_platform.delay=5;
+	lbee9qmb_platform.gpio_pwr=-1;
+	lbee9qmb_platform.gpio_reset = 160;
+
+	if (platform_device_register(&lbee9qmb_device))
+					pr_err("%s: registration failed\n", __func__);
+				return;
 }
 #else
 static void tegra_setup_rfkill(void) { }
@@ -1132,7 +1125,9 @@ static struct platform_device tegra_spi_devices[] = {
 static noinline void __init tegra_setup_spi(void)
 {
 
+
 	int rc;
+#if 0
 	const NvU32 *spi_mux;
 	const NvU32 *sflash_mux;
 	NvU32 spi_mux_nr;
@@ -1192,6 +1187,24 @@ static noinline void __init tegra_setup_spi(void)
 			pr_err("%s: registration of %s.%d failed\n",
 			       __func__, pdev->name, pdev->id);
 		}
+	}
+#endif
+	rc = platform_device_register(&tegra_spi_devices[0]);
+	if (rc) {
+		pr_err("%s: registration of %s.%d failed\n",
+		       __func__, tegra_spi_devices[0].name, tegra_spi_devices[0].id);
+	}
+
+	rc = platform_device_register(&tegra_spi_devices[1]);
+	if (rc) {
+		pr_err("%s: registration of %s.%d failed\n",
+		       __func__, tegra_spi_devices[1].name, tegra_spi_devices[1].id);
+	}
+
+	rc = platform_device_register(&tegra_spi_devices[2]);
+	if (rc) {
+		pr_err("%s: registration of %s.%d failed\n",
+		       __func__, tegra_spi_devices[2].name, tegra_spi_devices[2].id);
 	}
 
 	printk(KERN_INFO "pICS_%s: Ending...",__func__);
@@ -1363,6 +1376,7 @@ static struct platform_device tegra_w1_device = {
 };
 static noinline void __init tegra_setup_w1(void)
 {
+#if 0
 	const NvU32 *pinmux;
 	NvU32 nr_pinmux;
 
@@ -1373,6 +1387,12 @@ static noinline void __init tegra_setup_w1(void)
 	}
 	tegra_w1_platform.pinmux = pinmux[0];
 	printk(KERN_INFO "pICS_%s: tegra_w1_platform.pinmux = %lu",__func__, pinmux[0]);
+	if (platform_device_register(&tegra_w1_device)) {
+		pr_err("%s: failed to register %s.%d\n",
+		       __func__, tegra_w1_device.name, tegra_w1_device.id);
+	}
+#endif
+	tegra_w1_platform.pinmux = 1;
 	if (platform_device_register(&tegra_w1_device)) {
 		pr_err("%s: failed to register %s.%d\n",
 		       __func__, tegra_w1_device.name, tegra_w1_device.id);
@@ -1427,6 +1447,7 @@ static void __init tegra_setup_suspend(void)
 		gpio_to_irq(TEGRA_GPIO_PQ7), gpio_to_irq(TEGRA_GPIO_PN2),
 	};
 #endif /* CONFIG_ARCH_TEGRA_2x_SOC */
+#if 0
 	const NvOdmWakeupPadInfo *w;
 	const NvOdmSocPowerStateInfo *lp;
 	struct tegra_suspend_platform_data *plat = &tegra_suspend_platform;
@@ -1492,9 +1513,9 @@ static void __init tegra_setup_suspend(void)
 	
 	printk(KERN_INFO "pICS_%s: nr_wake = [%d]",__func__, nr_wake);
 	while (nr_wake--) {
-		printk(KERN_INFO "pICS_%s: w = %d)",__func__, w);
+		printk(KERN_INFO "pICS_%s: w = %u)",__func__, w);
 		pad = w->WakeupPadNumber;
-		/*printk(KERN_INFO "pICS_%s: pad = %u)",__func__, pad);*/ /* ICSPROBLEM here it might be */
+		printk(KERN_INFO "pICS_%s: pad = %u)",__func__, pad); /* ICSPROBLEM here it might be */
 		if (pad < ARRAY_SIZE(wakepad_irq) && w->enable) {
 			enable_irq_wake(wakepad_irq[pad]);
 			printk(KERN_INFO "pICS_%s: enable_irq_wake(wakepad_irq[pad]=%d)",__func__, wakepad_irq[pad]);
@@ -1517,11 +1538,60 @@ static void __init tegra_setup_suspend(void)
 		}
 		w++;
 	}
+#endif
 
-do_register:
+	const NvOdmWakeupPadInfo *w;
+	NvU32 nr_wake;
+	unsigned int pad;
+
+	w = NvOdmQueryGetWakeupPadTable(&nr_wake);
+	
+	tegra_suspend_platform.dram_suspend = true;
+	tegra_suspend_platform.dram_suspend = true;
+	tegra_suspend_platform.core_off = true;
+	tegra_suspend_platform.cpu_timer = 800;
+	tegra_suspend_platform.cpu_off_timer = 600;
+	tegra_suspend_platform.core_timer = 1842;
+	tegra_suspend_platform.core_off_timer = 31;
+	tegra_suspend_platform.separate_req = 1;
+	tegra_suspend_platform.corereq_high = 1;
+	tegra_suspend_platform.sysclkreq_high = 1;
+	tegra_suspend_platform.wake_enb = 0;
+	tegra_suspend_platform.wake_low = 0;
+	tegra_suspend_platform.wake_high = 0;
+	tegra_suspend_platform.wake_any = 0;
+
+	printk(KERN_INFO "pICS_%s: nr_wake = [%d]",__func__, nr_wake);
+	while (nr_wake--) {
+		printk(KERN_INFO "pICS_%s: w = %u)",__func__, w);
+		pad = w->WakeupPadNumber;
+		printk(KERN_INFO "pICS_%s: pad = %u)",__func__, pad); /* ICSPROBLEM here it might be */
+		if (pad < ARRAY_SIZE(wakepad_irq) && w->enable) {
+			enable_irq_wake(wakepad_irq[pad]);
+			printk(KERN_INFO "pICS_%s: enable_irq_wake(wakepad_irq[pad]=%d)",__func__, wakepad_irq[pad]);
+		}
+		if (w->enable) {
+			tegra_suspend_platform.wake_enb |= (1 << pad);
+			printk(KERN_INFO "pICS_%s: tegra_suspend_platform.wake_enb = %lu",__func__, tegra_suspend_platform.wake_enb);
+			if (w->Polarity == NvOdmWakeupPadPolarity_Low) {
+				tegra_suspend_platform.wake_low |= (1 << pad);
+				printk(KERN_INFO "pICS_%s: tegra_suspend_platform.wake_low = %lu",__func__, tegra_suspend_platform.wake_low);
+			}
+			else if (w->Polarity == NvOdmWakeupPadPolarity_High) {
+				tegra_suspend_platform.wake_high |= (1 << pad);
+				printk(KERN_INFO "pICS_%s: tegra_suspend_platform.wake_high = %lu",__func__, tegra_suspend_platform.wake_high);
+			}
+			else if (w->Polarity == NvOdmWakeupPadPolarity_AnyEdge) {
+				tegra_suspend_platform.wake_any |= (1 << pad);
+				printk(KERN_INFO "pICS_%s: tegra_suspend_platform.wake_any = %lu",__func__, tegra_suspend_platform.wake_any);
+			}
+		}
+		w++;
+	}
+
 	printk(KERN_INFO "pICS_%s: tegra_init_suspend(tegra_suspend_platform)",__func__);
-	tegra_init_suspend(plat);
-	tegra_init_idle(plat);
+	tegra_init_suspend(&tegra_suspend_platform);
+	tegra_init_idle(&tegra_suspend_platform);
 }
 
 static int tegra_reboot_notify(struct notifier_block *nb,

@@ -227,7 +227,7 @@ static int tegra_pinmux_cancel_func(const struct tegra_pingroup_config *config)
 
 	spin_unlock_irqrestore(&mux_lock, flags);
 
-	snprintf(pin_tabl.field[pg].pg_mux_name, sizeof(pin_tabl.field[pg].pg_mux_name), "NONE");
+	snprintf(pin_tabl.field[pg].pg_mux_name, sizeof(pin_tabl.field[pg].pg_mux_name), "SAFE_MUX_%s", func_name(mux_safe));
 
 	return 0;
 }
@@ -273,9 +273,9 @@ static int tegra_pinmux_set_func(const struct tegra_pingroup_config *config)
 
 	spin_unlock_irqrestore(&mux_lock, flags);
 	
-	snprintf(pin_tabl.field[pg].pg_mux_name, sizeof(pin_tabl.field[pg].pg_mux_name), "TEGRA_MUX_%s", tegra_mux_names[pingroups[pg].funcs[mux]]);
+	/*snprintf(pin_tabl.field[pg].pg_mux_name, sizeof(pin_tabl.field[pg].pg_mux_name), "TEGRA_MUX_%s", tegra_mux_names[pingroups[pg].funcs[mux]]);*/
 
-	/*snprintf(pin_tabl.field[pg].pg_mux_name, sizeof(pin_tabl.field[pg].pg_mux_name), "TEGRA_MUX_%s", tegra_mux_names[config->func]);*/
+	snprintf(pin_tabl.field[pg].pg_mux_name, sizeof(pin_tabl.field[pg].pg_mux_name), "TEGRA_MUX_%s", func_name(config->func));
 	return 0;
 }
 
@@ -370,14 +370,8 @@ int tegra_pinmux_set_pullupdown(tegra_pingroup_t pg, tegra_pullupdown_t pupd)
 
 	spin_unlock_irqrestore(&mux_lock, flags);
 
+	snprintf(pin_tabl.field[pg].pg_pupd_name, sizeof(pin_tabl.field[pg].pg_pupd_name), "TEGRA_PUPD_%s", pupd_name(pupd));
 
-	if (pupd == TEGRA_PUPD_NORMAL) { 
-		snprintf(pin_tabl.field[pg].pg_pupd_name, sizeof(pin_tabl.field[pg].pg_pupd_name), "TEGRA_PUPD_NORMAL");
-	} else if (pupd == TEGRA_PUPD_PULL_DOWN) {
-		snprintf(pin_tabl.field[pg].pg_pupd_name, sizeof(pin_tabl.field[pg].pg_pupd_name), "TEGRA_PUPD_PULL_DOWN");
-	} else {
-		snprintf(pin_tabl.field[pg].pg_pupd_name, sizeof(pin_tabl.field[pg].pg_pupd_name), "TEGRA_PUPD_PULL_UP");
-	}
 	return 0;
 }
 
@@ -403,7 +397,7 @@ static void tegra_pinmux_config_pingroup(const struct tegra_pingroup_config *con
 		if (err < 0) {
 			pr_err("pinmux: can't set pingroup %s pullupdown to %s: %d\n",
 			       pingroup_name(pingroup), pupd_name(pupd), err);
-		} else snprintf(pin_tabl.field[pingroup].pg_pupd_name, sizeof(pin_tabl.field[pingroup].pg_pupd_name), "%s", pupd_name(pupd));
+		} else snprintf(pin_tabl.field[pingroup].pg_pupd_name, sizeof(pin_tabl.field[pingroup].pg_pupd_name), "TEGRA_PUPD_%s", pupd_name(pupd));
 	}
 
 	if (pingroups[pingroup].tri_reg >= 0) {
@@ -411,7 +405,7 @@ static void tegra_pinmux_config_pingroup(const struct tegra_pingroup_config *con
 		if (err < 0) {
 			pr_err("pinmux: can't set pingroup %s tristate to %s: %d\n",
 			       pingroup_name(pingroup), tri_name(func), err);
-		} else snprintf(pin_tabl.field[pingroup].pg_tri_name, sizeof(pin_tabl.field[pingroup].pg_tri_name), "%s", tri_name(func));
+		} else snprintf(pin_tabl.field[pingroup].pg_tri_name, sizeof(pin_tabl.field[pingroup].pg_tri_name), "TEGRA_TRI_%s", tri_name(func));
 	}
 }
 
@@ -546,7 +540,7 @@ void tegra_pinmux_set_vddio_tristate(tegra_vddio_t vddio,
 				       " to %s\n", pingroup_name(pg),
 				       tri_name(tristate));
 			} else {
-				snprintf(pin_tabl.field[pg].pg_tri_name, sizeof(pin_tabl.field[pg].pg_tri_name), "%s", tri_name(tristate));
+				snprintf(pin_tabl.field[pg].pg_tri_name, sizeof(pin_tabl.field[pg].pg_tri_name), "TEGRA_TRI_%s", tri_name(tristate));
 				pin_tabl.field[pg].vddio = vddio;
 			}
 		}
@@ -580,12 +574,18 @@ void tegra_pinmux_config_pullupdown_table(const struct tegra_pingroup_config *co
 void tegra_pinmux_init_pingroups(void)
 {
 	int i;
-/*	unsigned long mux; */
+	unsigned long mux; 
+	unsigned long flags;
+	unsigned long tri;
+	unsigned long pupd;
 
 	pingroups = tegra_pinmux_get_pingroups();
 
+	spin_lock_irqsave(&mux_lock, flags);
+
 	for (i = 0; i < TEGRA_MAX_PINGROUP; i++) {
-		
+	
+
 		pinmux_conf *pt = &pin_tabl.field[i];
 
 		snprintf(pt->pg_name, sizeof(pt->pg_name), "%s",
@@ -594,24 +594,33 @@ void tegra_pinmux_init_pingroups(void)
 		if (pingroups[i].mux_reg < 0) {
 			snprintf(pt->pg_mux_name, sizeof(pt->pg_mux_name), "NONE");
 		} else {
-			/*mux = (pg_readl(pingroups[i].mux_reg) >>
+			mux = (pg_readl(pingroups[i].mux_reg) >>
 			       pingroups[i].mux_bit) & 0x3;
 			if (pingroups[i].funcs[mux] == TEGRA_MUX_RSVD) {
 				snprintf(pt->pg_mux_name, sizeof(pt->pg_mux_name), "TEGRA_MUX_RSVD%1lu", mux+1);
 			} else {
 				snprintf(pt->pg_mux_name, sizeof(pt->pg_mux_name), "TEGRA_MUX_%s", tegra_mux_names[pingroups[i].funcs[mux]]);
-			}*/
+			}
 		}
 		if (pingroups[i].mux_reg < 0) {
 			snprintf(pt->pg_pupd_name, sizeof(pt->pg_pupd_name), "TEGRA_PUPD_NORMAL");
-		} else snprintf(pt->pg_pupd_name, sizeof(pt->pg_pupd_name), "NOT KNOWN");
-
+		} else {
+			
+			pupd = (pg_readl(pingroups[i].pupd_reg) >>
+				pingroups[i].pupd_bit) & 0x3;
+			snprintf(pt->pg_pupd_name, sizeof(pt->pg_pupd_name), "TEGRA_PUPD_%s", pupd_name(pupd));
+		}
 		if (pingroups[i].tri_reg < 0) {
 			snprintf(pt->pg_tri_name, sizeof(pt->pg_tri_name), "TEGRA_TRI_NORMAL");
-		} else { 
-			snprintf(pt->pg_tri_name, sizeof(pt->pg_tri_name), "NOT KNOWN");
+		} else {
+			tri = (pg_readl(pingroups[i].tri_reg) >>
+			       pingroups[i].tri_bit) & 0x1;
+			snprintf(pt->pg_tri_name, sizeof(pt->pg_tri_name), "TEGRA_TRI_%s", tri_name(tri));
 		}
+		pt->vddio=pingroups[i].vddio;
+		
 	}
+	spin_unlock_irqrestore(&mux_lock, flags);
 
 }
 
