@@ -824,10 +824,10 @@ static int cpcap_usb_connected_probe(struct platform_device *pdev)
 	data->accy = pdata->accy;
 
 	/* Configure CPCAP-AP20 USB Mux to AP20 */
-	data->port = NVODM_PORT('v');
+	data->port = NVODM_PORT('v'); 
 	printk(KERN_INFO "pICS_%s: data->port = NVODM_PORT('v') = %lu\n",__func__, data->port);
 	data->pin = 6;
-	data->h_gpio = NvOdmGpioOpen();
+	data->h_gpio = NvOdmGpioOpen(); 
 	printk(KERN_INFO "pICS_%s: data->h_gpio = NvOdmGpioOpen()\n",__func__);
 	data->h_pin = NvOdmGpioAcquirePinHandle(data->h_gpio, data->port, data->pin);
 	printk(KERN_INFO "pICS_%s: data->h_pin = NvOdmGpioAcquirePinHandle(data->h_gpio, data->port, data->pin)\n",__func__);
@@ -835,7 +835,15 @@ static int cpcap_usb_connected_probe(struct platform_device *pdev)
 	printk(KERN_INFO "pICS_%s: NvOdmGpioConfig(data->h_gpio, data->h_pin, NvOdmGpioPinMode_Output)\n",__func__);
 	NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x1);
 	printk(KERN_INFO "pICS_%s: NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x1)\n",__func__);
-
+#if 0
+	data->port = 21;
+	data->pin = 6;
+	data->h_gpio = 174;
+	data->h_pin = gpio_request(data->h_gpio, 'nvrm_gpio');
+	tegra_gpio_enable(data->h_gpio);
+	gpio_direction_output(data->h_gpio, 0);	
+	gpio_set_value(data->h_gpio, 1)
+#endif
 	platform_set_drvdata(pdev, data);
 
 	/* when the phone is the host do not start the gadget driver */

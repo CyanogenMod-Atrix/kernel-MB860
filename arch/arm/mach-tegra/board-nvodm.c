@@ -1276,6 +1276,7 @@ static struct platform_device tegra_i2c_devices[] = {
 };
 static noinline void __init tegra_setup_i2c(void)
 {
+#if 0
 	const NvOdmPeripheralConnectivity *smbus;
 	const NvOdmIoAddress *smbus_addr = NULL;
 	const NvU32 *odm_mux_i2c = NULL;
@@ -1362,6 +1363,26 @@ static noinline void __init tegra_setup_i2c(void)
 			pr_err("%s: failed to register %s.%d\n",
 			       __func__, dev->name, dev->id);
 	}
+#endif
+
+	printk(KERN_INFO "pICS_%s: tegra_i2c_platform[0].bus_clk[0] = %lu",__func__, tegra_i2c_platform[0].bus_clk[0]);
+	tegra_i2c_platform[0].bus_clk[0] = 400*1000;
+	printk(KERN_INFO "pICS_%s: tegra_i2c_platform[0].bus_clk[0] = %lu",__func__, tegra_i2c_platform[0].bus_clk[0]);
+	tegra_i2c_platform[1].bus_clk[0] = 400*1000;
+	tegra_i2c_platform[2].bus_clk[0] = 400*1000;
+
+	if (platform_device_register(&tegra_i2c_devices[0]))
+		pr_err("%s: failed to register %s.%d\n",
+			       __func__, tegra_i2c_devices[0].name, tegra_i2c_devices[0].id);
+	if (platform_device_register(&tegra_i2c_devices[1]))
+		pr_err("%s: failed to register %s.%d\n",
+			       __func__, tegra_i2c_devices[0].name, tegra_i2c_devices[0].id);
+	if (platform_device_register(&tegra_i2c_devices[2]))
+		pr_err("%s: failed to register %s.%d\n",
+			       __func__, tegra_i2c_devices[0].name, tegra_i2c_devices[0].id);
+	if (platform_device_register(&tegra_i2c_devices[3]))
+		pr_err("%s: failed to register %s.%d\n",
+			       __func__, tegra_i2c_devices[0].name, tegra_i2c_devices[0].id);
 }
 #else
 static void tegra_setup_i2c(void) { }
@@ -1542,12 +1563,6 @@ static void __init tegra_setup_suspend(void)
 	}
 #endif
 
-	const NvOdmWakeupPadInfo *w;
-	NvU32 nr_wake;
-	unsigned int pad;
-
-	w = NvOdmQueryGetWakeupPadTable(&nr_wake);
-	
 	tegra_suspend_platform.dram_suspend = true;
 	tegra_suspend_platform.dram_suspend = true;
 	tegra_suspend_platform.core_off = true;
@@ -1562,36 +1577,40 @@ static void __init tegra_setup_suspend(void)
 	tegra_suspend_platform.wake_low = 0;
 	tegra_suspend_platform.wake_high = 0;
 	tegra_suspend_platform.wake_any = 0;
+	
+	enable_irq_wake(wakepad_irq[2]);
+	tegra_suspend_platform.wake_enb = 4;
+	tegra_suspend_platform.wake_low = 4;
 
-	printk(KERN_INFO "pICS_%s: nr_wake = [%d]",__func__, nr_wake);
-	while (nr_wake--) {
-		printk(KERN_INFO "pICS_%s: w = %u)",__func__, w);
-		pad = w->WakeupPadNumber;
-		printk(KERN_INFO "pICS_%s: pad = %u)",__func__, pad); /* ICSPROBLEM here it might be */
-		if (pad < ARRAY_SIZE(wakepad_irq) && w->enable) {
-			enable_irq_wake(wakepad_irq[pad]);
-			printk(KERN_INFO "pICS_%s: enable_irq_wake(wakepad_irq[pad]=%d)",__func__, wakepad_irq[pad]);
-		}
-		if (w->enable) {
-			tegra_suspend_platform.wake_enb |= (1 << pad);
-			printk(KERN_INFO "pICS_%s: tegra_suspend_platform.wake_enb = %lu",__func__, tegra_suspend_platform.wake_enb);
-			if (w->Polarity == NvOdmWakeupPadPolarity_Low) {
-				tegra_suspend_platform.wake_low |= (1 << pad);
-				printk(KERN_INFO "pICS_%s: tegra_suspend_platform.wake_low = %lu",__func__, tegra_suspend_platform.wake_low);
-			}
-			else if (w->Polarity == NvOdmWakeupPadPolarity_High) {
-				tegra_suspend_platform.wake_high |= (1 << pad);
-				printk(KERN_INFO "pICS_%s: tegra_suspend_platform.wake_high = %lu",__func__, tegra_suspend_platform.wake_high);
-			}
-			else if (w->Polarity == NvOdmWakeupPadPolarity_AnyEdge) {
-				tegra_suspend_platform.wake_any |= (1 << pad);
-				printk(KERN_INFO "pICS_%s: tegra_suspend_platform.wake_any = %lu",__func__, tegra_suspend_platform.wake_any);
-			}
-		}
-		w++;
-	}
+	enable_irq_wake(wakepad_irq[5]);
+	tegra_suspend_platform.wake_enb = 36;
+	tegra_suspend_platform.wake_high = 32;
+
+	enable_irq_wake(wakepad_irq[6]);
+	tegra_suspend_platform.wake_enb = 100;
+	tegra_suspend_platform.wake_any = 64;
+
+
+	enable_irq_wake(wakepad_irq[7]);
+	tegra_suspend_platform.wake_enb = 228;
+	tegra_suspend_platform.wake_any = 192;
+
+
+	enable_irq_wake(wakepad_irq[17]);
+	tegra_suspend_platform.wake_enb = 131300;
+	tegra_suspend_platform.wake_high = 131104;
+
+
+	enable_irq_wake(wakepad_irq[18]);
+	tegra_suspend_platform.wake_enb = 393444;
+	tegra_suspend_platform.wake_high = 393248;
+
+	enable_irq_wake(wakepad_irq[24]);
+	tegra_suspend_platform.wake_enb = 17170660;
+	tegra_suspend_platform.wake_any = 16777408;
 
 	printk(KERN_INFO "pICS_%s: tegra_init_suspend(tegra_suspend_platform)",__func__);
+
 	tegra_init_suspend(&tegra_suspend_platform);
 	tegra_init_idle(&tegra_suspend_platform);
 }
