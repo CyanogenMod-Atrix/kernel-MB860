@@ -581,10 +581,8 @@ void tegra_pinmux_init_pingroups(void)
 
 	pingroups = tegra_pinmux_get_pingroups();
 
-	
 
 	for (i = 0; i < TEGRA_MAX_PINGROUP; i++) {
-	
 
 		pinmux_conf *pt = &pin_tabl.field[i];
 
@@ -606,20 +604,20 @@ void tegra_pinmux_init_pingroups(void)
 		if (pingroups[i].mux_reg < 0) {
 			snprintf(pt->pg_pupd_name, sizeof(pt->pg_pupd_name), "TEGRA_PUPD_NORMAL");
 		} else {
-			spin_lock_irqsave(&mux_lock, flags);
+			/*spin_lock_irqsave(&mux_lock, flags);
 			pupd = (pg_readl(pingroups[i].pupd_reg) >>
 				pingroups[i].pupd_bit) & 0x3;
 			spin_unlock_irqrestore(&mux_lock, flags);
-			snprintf(pt->pg_pupd_name, sizeof(pt->pg_pupd_name), "TEGRA_PUPD_%s", pupd_name(pupd));
+			snprintf(pt->pg_pupd_name, sizeof(pt->pg_pupd_name), "TEGRA_PUPD_%s", pupd_name(pupd));*/
 		}
 		if (pingroups[i].tri_reg < 0) {
 			snprintf(pt->pg_tri_name, sizeof(pt->pg_tri_name), "TEGRA_TRI_NORMAL");
 		} else {
-			spin_lock_irqsave(&mux_lock, flags);
+			/*spin_lock_irqsave(&mux_lock, flags);
 			tri = (pg_readl(pingroups[i].tri_reg) >>
 			       pingroups[i].tri_bit) & 0x1;
 			spin_unlock_irqrestore(&mux_lock, flags);
-			snprintf(pt->pg_tri_name, sizeof(pt->pg_tri_name), "TEGRA_TRI_%s", tri_name(tri));
+			snprintf(pt->pg_tri_name, sizeof(pt->pg_tri_name), "TEGRA_TRI_%s", tri_name(tri));*/
 		}
 		pt->vddio=pingroups[i].vddio;
 		
