@@ -470,12 +470,12 @@ static void __init tegra_mot_init(void)
 
 	mot_modem_init();
 
-	(void) platform_driver_register(&cpcap_usb_connected_driver);
+/*	(void) platform_driver_register(&cpcap_usb_connected_driver);
 
 	mot_wlan_init();
 	mot_sensors_init();
 
-	mot_nvodmcam_init();
+	mot_nvodmcam_init();*/
 
 	printk("%s: registering i2c devices...\n", __func__);
 
