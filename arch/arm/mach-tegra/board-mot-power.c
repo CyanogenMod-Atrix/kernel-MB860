@@ -20,7 +20,7 @@
 
 #include <mach/iomap.h>
 #include <mach/irqs.h>
-#include <mach/nvrm_linux.h>
+/*#include <mach/nvrm_linux.h>*/
 #include <linux/regulator/consumer.h>
 #include <linux/regulator/driver.h>
 #include <linux/regulator/fixed.h>
@@ -28,9 +28,9 @@
 #include <linux/usb/android_composite.h>
 #include <linux/gpio.h>
 #include <linux/cpcap-accy.h>
-#include <nvrm_module.h>
-#include <nvrm_boot.h>
-#include <nvodm_services.h>
+/*#include <nvrm_module.h>*/
+/*#include <nvrm_boot.h>*/
+/*#include <nvodm_services.h>*/
 #include <linux/mdm_ctrl.h>
 
 #include "gpio-names.h"
@@ -41,6 +41,9 @@
 
 extern void tegra_machine_restart(char mode, const char *cmd);
 static int disable_rtc_alarms(struct device *dev, void *cnt);
+
+#define PWRUP_FACTORY_CABLE         0x00000020 /* Bit 5  */
+#define PWRUP_INVALID               0xFFFFFFFF
 
 void mot_system_power_off(void)
 {
@@ -804,24 +807,25 @@ struct spi_board_info tegra_spi_devices[] __initdata = {
 #endif
 };
 
-
+/*
 struct cpcap_usb_connected_data {
 	NvOdmServicesGpioHandle h_gpio;
 	NvOdmGpioPinHandle h_pin;
 	NvU32 port;
 	NvU32 pin;
 	enum cpcap_accy accy;
-};
+};*/
 
 static int cpcap_usb_connected_probe(struct platform_device *pdev)
 {
-	struct cpcap_usb_connected_data *data;
+/*	struct cpcap_usb_connected_data *data;*/
 	struct cpcap_accy_platform_data *pdata = pdev->dev.platform_data;
 
 	int nr_gpio;
 	int ret;
 	static int count_f7 = 0;
 
+#if 0
 	data = kzalloc(sizeof(*data), GFP_KERNEL);
 	if(!data)
 		return -ENOMEM;
@@ -829,7 +833,7 @@ static int cpcap_usb_connected_probe(struct platform_device *pdev)
 	data->accy = pdata->accy;
 
 
-#if 0
+
 	
 	/* Configure CPCAP-AP20 USB Mux to AP20 */
 	data->port = NVODM_PORT('v'); 
@@ -879,16 +883,16 @@ try_f7:
 	gpio_direction_output(nr_gpio, 0);	
 	gpio_set_value(nr_gpio, 1);
 
-	platform_set_drvdata(pdev, data);
+	platform_set_drvdata(pdev, pdata);
 
 	/* when the phone is the host do not start the gadget driver */
-	if((data->accy == CPCAP_ACCY_USB) || (data->accy == CPCAP_ACCY_FACTORY)) {
+	if((pdata->accy == CPCAP_ACCY_USB) || (pdata->accy == CPCAP_ACCY_FACTORY)) {
 #ifdef CONFIG_USB_TEGRA_OTG
 		tegra_otg_set_mode(0);
 #endif
-		android_usb_set_connected(1, data->accy);
+		android_usb_set_connected(1, pdata->accy);
 	}
-	if(data->accy == CPCAP_ACCY_USB_DEVICE) {
+	if(pdata->accy == CPCAP_ACCY_USB_DEVICE) {
 #ifdef CONFIG_USB_TEGRA_OTG
 		tegra_otg_set_mode(1);
 #endif
@@ -900,7 +904,9 @@ try_f7:
 
 static int cpcap_usb_connected_remove(struct platform_device *pdev)
 {
-	struct cpcap_usb_connected_data *data = platform_get_drvdata(pdev);
+/*	struct cpcap_usb_connected_data *data = platform_get_drvdata(pdev);*/
+	struct cpcap_accy_platform_data *pdata = pdev->dev.platform_data;
+
 	int nr_gpio;
 
 	mdm_ctrl_set_usb_ipc(false);
@@ -923,14 +929,14 @@ static int cpcap_usb_connected_remove(struct platform_device *pdev)
 	
 	tegra_gpio_disable(nr_gpio);
 
-	if((data->accy == CPCAP_ACCY_USB) || (data->accy == CPCAP_ACCY_FACTORY))
-		android_usb_set_connected(0, data->accy);
+	if((pdata->accy == CPCAP_ACCY_USB) || (pdata->accy == CPCAP_ACCY_FACTORY))
+		android_usb_set_connected(0, pdata->accy);
 
 #ifdef CONFIG_USB_TEGRA_OTG
 	tegra_otg_set_mode(2);
 #endif
 
-	kfree(data);
+/*	kfree(data);*/
 
         return 0;
 }
