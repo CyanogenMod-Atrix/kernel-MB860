@@ -10,6 +10,7 @@
 #include <linux/delay.h>
 #include <linux/reboot.h>
 #include <linux/rtc.h>
+#include <linux/gpio.h>
 
 #include <asm/mach-types.h>
 #include <asm/mach/arch.h>
@@ -817,12 +818,19 @@ static int cpcap_usb_connected_probe(struct platform_device *pdev)
 	struct cpcap_usb_connected_data *data;
 	struct cpcap_accy_platform_data *pdata = pdev->dev.platform_data;
 
+	int nr_gpio;
+	int ret;
+	static int count_f7 = 0;
+
 	data = kzalloc(sizeof(*data), GFP_KERNEL);
 	if(!data)
 		return -ENOMEM;
 
 	data->accy = pdata->accy;
 
+
+#if 0
+	
 	/* Configure CPCAP-AP20 USB Mux to AP20 */
 	data->port = NVODM_PORT('v'); 
 	printk(KERN_INFO "pICS_%s: data->port = NVODM_PORT('v') = %lu\n",__func__, data->port);
@@ -835,15 +843,42 @@ static int cpcap_usb_connected_probe(struct platform_device *pdev)
 	printk(KERN_INFO "pICS_%s: NvOdmGpioConfig(data->h_gpio, data->h_pin, NvOdmGpioPinMode_Output)\n",__func__);
 	NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x1);
 	printk(KERN_INFO "pICS_%s: NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x1)\n",__func__);
-#if 0
-	data->port = 21;
+#endif
+/*	data->port = 21;
 	data->pin = 6;
 	data->h_gpio = 174;
-	data->h_pin = gpio_request(data->h_gpio, 'nvrm_gpio');
-	tegra_gpio_enable(data->h_gpio);
-	gpio_direction_output(data->h_gpio, 0);	
-	gpio_set_value(data->h_gpio, 1)
-#endif
+	data->h_pin = */
+
+try_f7:
+
+	nr_gpio = 174;
+    	ret = gpio_request(nr_gpio, "nvrm_gpio");
+    	printk(KERN_INFO "pICS_%s: gpio_request(nr_gpio=%i, 'nvrm_gpio') => %i;\n",__func__, nr_gpio, ret);
+
+    	if (ret) {
+		if(TEGRA_GPIO_PF7 == nr_gpio && !count_f7)
+		{
+			pr_err("%s: gpio_request for 47 failed (%d). Special case to free and retry\n",	__func__, ret);
+			// F7 is allocated early by lights driver but really should be owned by disp driver
+			gpio_free(nr_gpio);
+			/*gpio_data[nr_gpio].val = false;
+			gpio_data[nr_gpio].alloc = false;*/
+			count_f7 = 1;
+			goto try_f7;
+		}
+
+		/*gpio_to_name(nr_gpio, gpio_name);*/
+		pr_err("%s: gpio_request for %d failed (%d)\n",
+		       __func__, nr_gpio, ret);
+	}
+
+/*	gpio_data[nr_gpio].alloc = true;
+	gpio_data[nr_gpio].val = false;*/
+
+	tegra_gpio_enable(nr_gpio);
+	gpio_direction_output(nr_gpio, 0);	
+	gpio_set_value(nr_gpio, 1);
+
 	platform_set_drvdata(pdev, data);
 
 	/* when the phone is the host do not start the gadget driver */
@@ -866,9 +901,10 @@ static int cpcap_usb_connected_probe(struct platform_device *pdev)
 static int cpcap_usb_connected_remove(struct platform_device *pdev)
 {
 	struct cpcap_usb_connected_data *data = platform_get_drvdata(pdev);
+	int nr_gpio;
 
 	mdm_ctrl_set_usb_ipc(false);
-
+#if 0
 	/* Configure CPCAP-AP20 USB Mux to CPCAP */
 	NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x0);
 	printk(KERN_INFO "pICS_%s: NvOdmGpioSetState (data->h_gpio, data->h_pin, 0x0)\n",__func__);
@@ -876,6 +912,16 @@ static int cpcap_usb_connected_remove(struct platform_device *pdev)
 	printk(KERN_INFO "pICS_%s: NvOdmGpioReleasePinHandle(data->h_gpio, data->h_pin)\n",__func__);
 	NvOdmGpioClose(data->h_gpio);
 	printk(KERN_INFO "pICS_%s: NvOdmGpioClose(data->h_gpio)\n",__func__);
+#endif
+	
+	nr_gpio = 174;
+	gpio_set_value(nr_gpio, 0);
+
+	gpio_free(nr_gpio);
+/*	gpio_data[nr_gpio].val = false;
+	gpio_data[nr_gpio].alloc = false;*/
+	
+	tegra_gpio_disable(nr_gpio);
 
 	if((data->accy == CPCAP_ACCY_USB) || (data->accy == CPCAP_ACCY_FACTORY))
 		android_usb_set_connected(0, data->accy);
