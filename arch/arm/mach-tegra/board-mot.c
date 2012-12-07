@@ -313,6 +313,7 @@ static struct i2c_board_info tegra_i2c_bus0_board_info[] = {
 		.irq = TOUCH_GPIO_INTR,
 		.platform_data = &ts_platform_olympus_m_1,
 	},
+#if 0
 #if defined(CONFIG_TEGRA_ODM_OLYMPUS)
 	{
 		/*  ISL 29030 (prox/ALS) driver */
@@ -320,6 +321,7 @@ static struct i2c_board_info tegra_i2c_bus0_board_info[] = {
 		.platform_data = &isl29030_als_ir_data_Olympus,
 		.irq = 180,
 	},
+#endif
 #endif
 };
 static struct i2c_board_info tegra_i2c_bus3_board_info[] = {

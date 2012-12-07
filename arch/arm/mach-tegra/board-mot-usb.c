@@ -4,14 +4,15 @@
 #include <linux/usb/android_composite.h>
 
 #include <asm/mach-types.h>
-
-#include <mach/nvrm_linux.h>
 /*
+#include <mach/nvrm_linux.h>
+
 #include <nvrm_module.h>
 #include <nvrm_boot.h>
 #include <nvodm_services.h>
-*/
+
 #include "nvrm_power.h"
+*/
 #include "board-mot.h"
 
 #define BOOT_MODE_MAX_LEN 30
@@ -256,10 +257,12 @@ void tegra_get_serial_number(void)
 	int i;
 	char *src;
 
-	NvRmQueryChipUniqueId(s_hRmGlobal, sizeof(chip_id), (void *)chip_id);
+/*	NvRmQueryChipUniqueId(s_hRmGlobal, sizeof(chip_id), (void *)chip_id);
 	printk(KERN_INFO "pICS_%s: chip_id[0] = %08x, chip_id[1] = %08x",__func__, chip_id[0], chip_id[1]);
 	snprintf(serial, sizeof(serial), "%08x%08x", chip_id[1], chip_id[0]);
-	printk(KERN_INFO "pICS_%s: serial = %s",__func__, serial);
+	printk(KERN_INFO "pICS_%s: serial = %s",__func__, serial);*/
+	
+	snprintf(serial, sizeof(serial), "037c7148423ff097");
 
 	/* create a fake MAC address from our serial number.
 	 * first byte is 0x02 to signify locally administered.
@@ -278,9 +281,12 @@ void mot_setup_gadget(void)
 	unsigned int chip_id[2];
 	char serial[17];
 
-	NvRmQueryChipUniqueId(s_hRmGlobal, sizeof(chip_id), (void *)chip_id);
+/*	NvRmQueryChipUniqueId(s_hRmGlobal, sizeof(chip_id), (void *)chip_id);
 	printk(KERN_INFO "pICS_%s: chip_id[0] = %08x, chip_id[1] = %08x",__func__, chip_id[0], chip_id[1]);
-	snprintf(serial, sizeof(serial), "%08x%08x", chip_id[1], chip_id[0]);
+	snprintf(serial, sizeof(serial), "%08x%08x", chip_id[1], chip_id[0]);*/
+
+	snprintf(serial, sizeof(serial), "037c7148423ff097");
+
 	printk(KERN_INFO "pICS_%s: serial = %s",__func__, serial);
 	tegra_get_serial_number();
 
