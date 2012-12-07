@@ -457,8 +457,8 @@ static void __init tegra_mot_init(void)
 	mot_setup_power();
 	mot_setup_lights(&tegra_i2c_bus0_board_info[BACKLIGHT_DEV]);
 	mot_setup_touch(&tegra_i2c_bus0_board_info[TOUCHSCREEN_DEV]);
-	mot_sec_init();
-	mot_tcmd_init();
+/*	mot_sec_init();
+	mot_tcmd_init();*/
 
 	mot_setup_gadget();
 
