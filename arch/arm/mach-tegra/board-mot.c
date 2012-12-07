@@ -459,8 +459,8 @@ static void __init tegra_mot_init(void)
 #endif
 
 	mot_setup_power();
-	mot_setup_lights(&tegra_i2c_bus0_board_info[BACKLIGHT_DEV]);
-	mot_setup_touch(&tegra_i2c_bus0_board_info[TOUCHSCREEN_DEV]);
+/*	mot_setup_lights(&tegra_i2c_bus0_board_info[BACKLIGHT_DEV]);
+	mot_setup_touch(&tegra_i2c_bus0_board_info[TOUCHSCREEN_DEV]);*/
 /*	mot_sec_init();
 	mot_tcmd_init();*/
 
@@ -478,7 +478,7 @@ static void __init tegra_mot_init(void)
 #endif
 	}
 
-	mot_modem_init();
+/*	mot_modem_init();*/
 
 	(void) platform_driver_register(&cpcap_usb_connected_driver);
 

@@ -349,6 +349,8 @@ int tegra_pinmux_set_pullupdown(tegra_pingroup_t pg, tegra_pullupdown_t pupd)
 	unsigned long reg;
 	unsigned long flags;
 
+	printk(KERN_INFO "in tegra_pinmux_set_pullupdown");
+	
 	if (pg < 0 || pg >=  TEGRA_MAX_PINGROUP)
 		return -ERANGE;
 
@@ -517,7 +519,7 @@ void tegra_pinmux_config_tristate_table(const struct tegra_pingroup_config *conf
 			err = tegra_pinmux_set_tristate(pingroup, tristate);
 			printk(KERN_INFO "pICS_%s: pingroup %s on MUX %s setting to tristate %s\n",__func__, pingroup_name(pingroup), func_name(config[i].func), tri_name(tristate));
 			snprintf(pin_tabl.field[pingroup].pg_mux_name, sizeof(pin_tabl.field[pingroup].pg_mux_name), "TEGRA_MUX_%s", func_name(config[i].func));
-				snprintf(pin_tabl.field[pingroup].pg_tri_name, sizeof(pin_tabl.field[pingroup].pg_tri_name), "%s", tri_name(tristate));
+			snprintf(pin_tabl.field[pingroup].pg_tri_name, sizeof(pin_tabl.field[pingroup].pg_tri_name), "TEGRA_TRI_%s", tri_name(tristate));
 			if (err < 0) {
 				pr_err("pinmux: can't set pingroup %s tristate"
 					" to %s: %d\n",	pingroup_name(pingroup),
