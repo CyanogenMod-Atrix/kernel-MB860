@@ -36,7 +36,7 @@
 
 #include <mach/iomap.h>
 #include <mach/irqs.h>
-#include <mach/nvrm_linux.h>
+/*#include <mach/nvrm_linux.h>*/
 #include <linux/regulator/consumer.h>
 #include <linux/regulator/driver.h>
 #include <linux/regulator/machine.h>
@@ -47,9 +47,9 @@
 #include <linux/gpio_keys.h>
 #include <linux/input.h>
 #endif
-#include <nvrm_module.h>
+/*#include <nvrm_module.h>
 #include <nvrm_boot.h>
-#include <nvodm_services.h>
+#include <nvodm_services.h>*/
 
 #include "gpio-names.h"
 
@@ -64,7 +64,7 @@
 #include "hwrev.h"
 
 #include "board-mot.h"
-#include "nvrm_power.h"
+/*#include "nvrm_power.h"*/
 
 // override default moto kernel rule and bootloader console=null
 #ifdef CONFIG_MOT_SERIAL_JACK
@@ -72,6 +72,10 @@
 #else
 #define ENABLE_JACK_UART 0
 #endif
+
+#define PWRUP_FACTORY_CABLE         0x00000020 /* Bit 5  */
+#define PWRUP_INVALID               0xFFFFFFFF
+#define PWRUP_BAREBOARD             0x00100000 /* Bit 20 */
 
 static char oly_unused_pins_p3[] = {
         TEGRA_GPIO_PO1,

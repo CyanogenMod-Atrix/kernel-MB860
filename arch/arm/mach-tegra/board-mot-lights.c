@@ -10,11 +10,11 @@
 
 #include <mach/iomap.h>
 #include <mach/irqs.h>
-#include <mach/nvrm_linux.h>
 #include <linux/gpio.h>
+/*#include <mach/nvrm_linux.h>
 #include <nvrm_module.h>
 #include <nvrm_boot.h>
-#include <nvodm_services.h>
+#include <nvodm_services.h>*/
 
 #include <linux/leds-lm3530.h>
 #include <linux/leds-lm3532.h>

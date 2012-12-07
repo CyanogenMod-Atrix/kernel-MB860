@@ -18,7 +18,7 @@
 #include <asm/bootinfo.h>
 #include <nvrm_boot.h>
 #ifdef CONFIG_VIB_PWM
-#include <nvodm_services.h>
+/*#include <nvodm_services.h>*/
 #include <linux/vib-pwm.h>
 #endif
 

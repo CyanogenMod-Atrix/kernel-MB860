@@ -39,11 +39,11 @@
 
 #include "board-mot.h"
 
-extern void tegra_machine_restart(char mode, const char *cmd);
-static int disable_rtc_alarms(struct device *dev, void *cnt);
-
 #define PWRUP_FACTORY_CABLE         0x00000020 /* Bit 5  */
 #define PWRUP_INVALID               0xFFFFFFFF
+
+extern void tegra_machine_restart(char mode, const char *cmd);
+static int disable_rtc_alarms(struct device *dev, void *cnt);
 
 void mot_system_power_off(void)
 {

@@ -16,7 +16,7 @@
 #include <mach/iomap.h>
 #include <mach/mdm_ctrl.h>
 #include <mach/sec_linux.h>
-#include <mach/nvrm_linux.h>
+/*#include <mach/nvrm_linux.h>*/
 #include <mach/sdhci-simple.h>
 #include <mach/nand.h>
 
