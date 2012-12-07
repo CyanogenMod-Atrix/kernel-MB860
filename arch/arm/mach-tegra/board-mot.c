@@ -441,9 +441,13 @@ static int config_unused_pins(char *pins, int num)
 
 static void __init tegra_mot_init(void)
 {
+	pinmux_show();
 	tegra_common_init();
+	pinmux_show();
 	tegra_setup_nvodm(true, true);
+	pinmux_show();
 	tegra_register_socdev();
+	pinmux_show();
 #if 0
 #ifdef CONFIG_APANIC_RAM
 	apanic_ram_init();
@@ -534,6 +538,7 @@ static void __init tegra_mot_init(void)
 			config_unused_pins(oly_unused_pins_p3, ARRAY_SIZE(oly_unused_pins_p3));
 		}
 	}
+	pinmux_show();
 
 }
 
