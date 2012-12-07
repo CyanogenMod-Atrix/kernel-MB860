@@ -457,10 +457,10 @@ static void __init tegra_mot_init(void)
 	mot_setup_power();
 	mot_setup_lights(&tegra_i2c_bus0_board_info[BACKLIGHT_DEV]);
 	mot_setup_touch(&tegra_i2c_bus0_board_info[TOUCHSCREEN_DEV]);
-/*	mot_sec_init();
+	mot_sec_init();
 	mot_tcmd_init();
 
-	mot_setup_gadget();*/
+	mot_setup_gadget();
 
 	tegra_uart_platform[UART_IPC_OLYMPUS].uart_ipc = 1;
 	tegra_uart_platform[UART_IPC_OLYMPUS].uart_wake_host = TEGRA_GPIO_PA0;
