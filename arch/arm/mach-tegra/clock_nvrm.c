@@ -398,6 +398,7 @@ void __init tegra2_init_clocks(void)
 		cl = &tegra_clk_lookups[i];
 		clk_init(cl->clk);
 		clkdev_add(cl);
+		printk(KERN_INFO "pICS_%s:  clock[%s]",__func__, cl->con_id);
 	}
 
 	for (i=0; i<ARRAY_SIZE(tegra_periph_clk); i++) {
@@ -406,6 +407,7 @@ void __init tegra2_init_clocks(void)
 		cl->clk = c;
 		clk_init(c);
 		clkdev_add(cl);
+		printk(KERN_INFO "pICS_%s:  clock[%s]: clock_parent=%s",__func__, cl->con_id, c->name);
 	}
 
 	for (i = 0; i < ARRAY_SIZE(tegra_clk_duplicates); i++) {
@@ -415,6 +417,7 @@ void __init tegra2_init_clocks(void)
 			cl = &cd->lookup;
 			cl->clk = c;
 			clkdev_add(cl);
+			printk(KERN_INFO "pICS_%s:  clock[%s]: clock_parent=%s",__func__, cl->con_id, c->name);
 		} else {
 			pr_err("%s: Unknown duplicate clock %s\n", __func__,
 				cd->name);
