@@ -302,7 +302,7 @@ static void tegra_ehci_shutdown (struct usb_hcd *hcd)
 	}
 }
 
-#ifdef CONFIG_MACH_TEGRA
+#ifdef CONFIG_MACH_MOT
 void tegra_ehci_enable_host (struct usb_hcd *hcd)
 {
 	struct ehci_hcd *ehci = hcd_to_ehci (hcd);
