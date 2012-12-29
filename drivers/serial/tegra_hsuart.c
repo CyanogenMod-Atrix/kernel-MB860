@@ -759,6 +759,7 @@ static irqreturn_t tegra_uart_isr(int irq, void *data)
 
 	spin_lock_irqsave(&u->lock, flags);
 	t  = container_of(u, struct tegra_uart_port, uport);
+#ifdef CONFIG_MACH_MOT
 	do {
 		iir = uart_readb(t, UART_IIR);
 		if (iir & UART_IIR_NO_INT) {
@@ -816,12 +817,69 @@ static irqreturn_t tegra_uart_isr(int irq, void *data)
 
 	/* Modem is down; disable UART interrupts. */
 	pr_warning("%s: modem is down; IER=0x%08X\n", __func__, t->ier_shadow);
+
 	t->ier_at_death = t->ier_shadow;
 	t->ier_shadow = 0;
 	uart_writeb(t, 0, UART_IER);
 
 	spin_unlock_irqrestore(&u->lock, flags);
 	return IRQ_HANDLED;
+#else
+		while (1) {
+		iir = uart_readb(t, UART_IIR);
+		if (iir & UART_IIR_NO_INT) {
+			if (likely(t->use_rx_dma)) {
+				if (is_rx_int) {
+					queue_work(t->rx_work_queue, &t->rx_work);
+				}
+			}
+			spin_unlock_irqrestore(&u->lock, flags);
+			return IRQ_HANDLED;
+		}
+
+		dev_dbg(u->dev, "tegra_uart_isr iir = 0x%x (%d)\n", iir,
+			(iir >> 1) & 0x7);
+		switch ((iir >> 1) & 0x7) {
+		case 0: /* Modem signal change interrupt */
+			do_handle_modem_signal(u);
+			break;
+		case 1: /* Transmit interrupt only triggered when using PIO */
+			t->ier_shadow &= ~UART_IER_THRI;
+			uart_writeb(t, t->ier_shadow, UART_IER);
+			do_handle_tx_pio(t);
+			break;
+		case 4: /* End of data */
+		case 6: /* Rx timeout */
+		case 2: /* Receive */
+				if (likely(t->use_rx_dma)) {
+					if (!is_rx_int) {
+						is_rx_int = true;
+						/* Disable interrups */
+						ier = t->ier_shadow;
+						ier |= UART_IER_RDI;
+						uart_writeb(t, ier, UART_IER);
+						ier &= ~(UART_IER_RDI | UART_IER_RLSI | UART_IER_RTOIE | UART_IER_EORD);
+						t->ier_shadow = ier;
+						uart_writeb(t, ier, UART_IER);
+					}
+				} else {
+					do_handle_rx_pio(t);
+					spin_unlock_irqrestore(&u->lock, flags);
+					tty_flip_buffer_push(u->state->port.tty);
+					spin_lock_irqsave(&u->lock, flags);
+				}
+			break;
+		case 3: /* Receive error */
+			/* FIXME how to handle this? Why do we get here */
+			do_decode_rx_error(t, uart_readb(t, UART_LSR));
+			break;
+		case 5: /* break nothing to handle */
+		case 7: /* break nothing to handle */
+			break;
+		}
+	}
+#endif
+
 }
 
 static void tegra_stop_rx(struct uart_port *u)
@@ -1273,9 +1331,11 @@ fail:
 static void tegra_tx_timeout(unsigned long data)
 {
 	unsigned char mcr, msr, lsr;
+#ifdef CONFIG_MACH_MOT
 	struct timespec now;
 	struct timespec uptime;
 	struct rtc_time rtc_timestamp;
+#endif
 	struct tegra_uart_port *t;
 	t = (struct tegra_uart_port *)data;
 

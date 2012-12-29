@@ -786,10 +786,10 @@ static void __init tegra_setup_hcd(void)
    	};
 
 	printk(KERN_INFO "pICS_%s: Starting...",__func__);
-
+#ifdef CONFIG_MACH_MOT
 	tegra_otg_platform.usb_property = &Usb1Property;
 	platform_device_register(&tegra_otg);
-
+#endif
 	tegra_hcd_platform[0].otg_mode = 1;
 
 	tegra_hcd_platform[2].otg_mode = 0;
@@ -810,123 +810,6 @@ struct tegra_kbc_plat tegra_kbc_platform;
 
 static noinline void __init tegra_setup_kbc(void)
 {
-#if 0
-	struct tegra_kbc_plat *pdata = &tegra_kbc_platform;
-	const NvOdmPeripheralConnectivity *conn;
-	NvOdmPeripheralSearch srch_attr = NvOdmPeripheralSearch_IoModule;
-	const struct NvOdmKeyVirtTableDetail **vkeys;
-	NvU32 srch_val = NvOdmIoModule_Kbd;
-	NvU32 temp;
-	NvU64 guid;
-	NvU32 i, j, k;
-	NvU32 cols=0;
-	NvU32 rows=0;
-	NvU32 *wake_row;
-	NvU32 *wake_col;
-	NvU32 wake_num;
-	NvU32 vnum;
-
-	pdata->keymap = kzalloc(sizeof(*pdata->keymap)*KBC_MAX_KEY, GFP_KERNEL);
-	printk(KERN_INFO "pICS_%s: pdata->keymap pointer to memory where key mapping is stored",__func__);
-	if (!pdata->keymap) {
-		pr_err("%s: out of memory for key mapping\n", __func__);
-		return;
-	}
-	pdata->wake_cnt = 0; /* 0:wake on any key >1:wake on wake_cfg */
-	printk(KERN_INFO "pICS_%s: pdata->wake_cnt = %d",__func__, pdata->wake_cnt);
-	if (NvOdmKbcIsSelectKeysWkUpEnabled(&wake_row, &wake_col, &wake_num)) {
-		for (i=0;i<wake_num;i++) printk(KERN_INFO "pICS_%s: wake_row[%i] = %i",__func__, i, wake_row[i]);
-		for (i=0;i<wake_num;i++) printk(KERN_INFO "pICS_%s: wake_col[%i] = %i",__func__, i, wake_col[i]);
-		printk(KERN_INFO "pICS_%s: wake_num = %d",__func__, wake_num);
-		BUG_ON(wake_num >= KBC_MAX_KEY);
-		if (wake_num) {
-		pdata->wake_cfg = kzalloc(sizeof(*pdata->wake_cfg)*wake_num,
-			GFP_KERNEL);
-		printk(KERN_INFO "pICS_%s: pdata->wake_cfg pointer to memory where key wake config is stored",__func__);
-		if (pdata->wake_cfg) {
-			pdata->wake_cnt = (int)wake_num;
-			printk(KERN_INFO "pICS_%s: pdata->wake_cnt = %d",__func__, pdata->wake_cnt);
-			for (i=0; i<wake_num; i++) {
-				pdata->wake_cfg[i].row=wake_row[i];
-				printk(KERN_INFO "pICS_%s: pdata->wake_cfg[%d].row = %d",__func__, i, wake_row[i]);
-				pdata->wake_cfg[i].col=wake_col[i];
-				printk(KERN_INFO "pICS_%s: pdata->wake_cfg[%d].col = %d",__func__, i, wake_col[i]);
-			}
-		} else
-			pr_err("disabling wakeup key filtering due to "
-				"out-of-memory error\n");
-		} else
-			pr_warning("no wakeup keys are configured \n");
-
-	}
-
-	NvOdmKbcGetParameter(NvOdmKbcParameter_DebounceTime, 1, &temp);
-
-	/* debounce time is reported from ODM in terms of clock ticks. */
-	pdata->debounce_cnt = temp;
-	printk(KERN_INFO "pICS_%s: pdata->debounce_cnt = %u",__func__, pdata->debounce_cnt);
-
-	/* repeat cycle is reported from ODM in milliseconds,
-	 * but needs to be specified in 32KHz ticks */
-	NvOdmKbcGetParameter(NvOdmKbcParameter_RepeatCycleTime, 1, &temp);
-	pdata->repeat_cnt = temp * 32;
-	printk(KERN_INFO "pICS_%s: pdata->repeat_cnt = %u",__func__, pdata->repeat_cnt);	
-
-	temp = NvOdmPeripheralEnumerate(&srch_attr, &srch_val, 1, &guid, 1);
-	if (!temp) {
-		kfree(pdata->keymap);
-		pr_err("%s: failed to find keyboard module\n", __func__);
-		return;
-	}
-	conn = NvOdmPeripheralGetGuid(guid);
-	if (!conn) {
-		kfree(pdata->keymap);
-		pr_err("%s: failed to find keyboard\n", __func__);
-		return;
-	}
-
-	for (i=0; i<conn->NumAddress; i++) {
-		NvU32 addr = conn->AddressList[i].Address;
-
-		if (conn->AddressList[i].Interface!=NvOdmIoModule_Kbd) continue;
-
-		if (conn->AddressList[i].Instance) {
-			pdata->pin_cfg[addr].num = cols++;
-			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].num = %u",__func__, addr, pdata->pin_cfg[addr].num);
-			pdata->pin_cfg[addr].is_col = true;
-			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].is_col = true",__func__, addr);
-		} else {
-			pdata->pin_cfg[addr].num = rows++;
-			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].num = %u",__func__, addr, pdata->pin_cfg[addr].num);
-			pdata->pin_cfg[addr].is_row = true;
-			printk(KERN_INFO "pICS_%s: pdata->pin_cfg[%d].is_row = true",__func__, addr);
-		}
-	}
-
-	for (i=0; i<KBC_MAX_KEY; i++) {
-		pdata->keymap[i] = -1;
-		printk(KERN_INFO "pICS_%s: pdata->keymap[%d] = -1",__func__, i);
-	}
-	vnum = NvOdmKbcKeyMappingGetVirtualKeyMappingList(&vkeys);
-	printk(KERN_INFO "pICS_%s: vnum = %d",__func__, vnum);
-	for (i=0; i<rows; i++) {
-		for (j=0; j<cols; j++) {
-			NvU32 sc = NvOdmKbcGetKeyCode(i, j, rows, cols);
-			printk(KERN_INFO "pICS_%s: sc = %lu",__func__, sc);
-			for (k=0; k<vnum; k++) {
-				if (sc >= vkeys[k]->StartScanCode &&
-				    sc <= vkeys[k]->EndScanCode) {
-					sc -= vkeys[k]->StartScanCode;
-					sc = vkeys[k]->pVirtualKeyTable[sc];
-					if (!sc) continue;
-					pdata->keymap[kbc_indexof(i,j)]=sc;
-					printk(KERN_INFO "pICS_%s: pdata->keymap[kbc_indexof(%d,%d)=%d] = %lu",__func__, i, j, kbc_indexof(i,j), sc);
-				}
-
-                        }
-		}
-	}
-#endif
 	int i;	
 
 	tegra_kbc_platform.keymap = kzalloc(sizeof(*tegra_kbc_platform.keymap)*KBC_MAX_KEY, GFP_KERNEL);
@@ -987,7 +870,56 @@ static noinline void __init tegra_setup_kbc(void)
 static void tegra_setup_kbc(void) { }
 #endif
 
+#if defined(CONFIG_KEYBOARD_GPIO)
+struct gpio_keys_platform_data tegra_button_data;
+static char *gpio_key_names = "gpio_keys";
+static noinline void __init tegra_setup_gpio_key(void)
+{
+	struct gpio_keys_button *tegra_buttons = NULL;
+	int ngpiokeys = 0;
+	const NvOdmGpioPinInfo *gpio_key_info;
+	int i;
+	NvOdmGpioPinKeyInfo *gpio_pin_info = NULL;
+
+	gpio_key_info = NvOdmQueryGpioPinMap(NvOdmGpioPinGroup_keypadMisc, 0,
+						 &ngpiokeys);
+
+	if (!ngpiokeys) {
+		pr_info("No gpio is configured as buttons\n");
+		return;
+	}
+
+	tegra_buttons = kzalloc(ngpiokeys * sizeof(struct gpio_keys_button),
+				 GFP_KERNEL);
+	if (!tegra_buttons) {
+		pr_err("Memory allocation failed for tegra_buttons\n");
+		return;
+	}
+
+	for (i = 0; i < ngpiokeys; ++i) {
+		tegra_buttons[i].gpio =
+			(int)(gpio_key_info[i].Port*8 + gpio_key_info[i].Pin);
+		gpio_pin_info = gpio_key_info[i].GpioPinSpecificData;
+		tegra_buttons[i].code = (int)gpio_pin_info->Code;
+		tegra_buttons[i].desc = gpio_key_names;
+
+		if (gpio_key_info[i].activeState == NvOdmGpioPinActiveState_Low)
+			tegra_buttons[i].active_low = 1;
+		else
+			tegra_buttons[i].active_low = 0;
+		tegra_buttons[i].type = EV_KEY;
+		tegra_buttons[i].wakeup = (gpio_pin_info->Wakeup)? 1: 0;
+		tegra_buttons[i].debounce_interval =
+				 gpio_pin_info->DebounceTimeMs;
+	}
+
+	tegra_button_data.buttons = tegra_buttons;
+	tegra_button_data.nbuttons = ngpiokeys;
+	return;
+}
+#else
 static void tegra_setup_gpio_key(void) { }
+#endif
 
 #ifdef CONFIG_LBEE9QMB_RFKILL
 static struct lbee9qmb_platform_data lbee9qmb_platform;
