@@ -786,10 +786,10 @@ static void __init tegra_setup_hcd(void)
    	};
 
 	printk(KERN_INFO "pICS_%s: Starting...",__func__);
-#ifdef CONFIG_USB_TEGRA_OTG
+
 	tegra_otg_platform.usb_property = &Usb1Property;
 	platform_device_register(&tegra_otg);
-#endif
+
 	tegra_hcd_platform[0].otg_mode = 1;
 
 	tegra_hcd_platform[2].otg_mode = 0;

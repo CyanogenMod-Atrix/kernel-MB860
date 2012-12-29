@@ -895,17 +895,13 @@ try_f7:
 
 	/* when the phone is the host do not start the gadget driver */
 	if((pdata->accy == CPCAP_ACCY_USB) || (pdata->accy == CPCAP_ACCY_FACTORY)) {
-#ifdef CONFIG_USB_TEGRA_OTG
 		tegra_otg_set_mode(0);
-#endif
 #ifdef CONFIG_USB_MOT_ANDROID
 		android_usb_set_connected(1, pdata->accy);
 #endif
 	}
 	if(pdata->accy == CPCAP_ACCY_USB_DEVICE) {
-#ifdef CONFIG_USB_TEGRA_OTG
 		tegra_otg_set_mode(1);
-#endif
 	}
 #ifdef CONFIG_MDM_CTRL
 	mdm_ctrl_set_usb_ipc(true);
@@ -946,9 +942,7 @@ static int cpcap_usb_connected_remove(struct platform_device *pdev)
 		android_usb_set_connected(0, pdata->accy);
 #endif
 
-#ifdef CONFIG_USB_TEGRA_OTG
 	tegra_otg_set_mode(2);
-#endif
 
 /*	kfree(data);*/
 
