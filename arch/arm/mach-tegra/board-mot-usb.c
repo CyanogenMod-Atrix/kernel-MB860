@@ -167,8 +167,11 @@ static struct android_usb_platform_data andusb_plat = {
 	.manufacturer_name = "Motorola",
 	.num_products = ARRAY_SIZE(usb_products),
 	.products = usb_products,
+#ifdef CONFIG_USB_MOT_ANDROID
 	.num_functions = ARRAY_SIZE(usb_functions_all),
 	.functions = usb_functions_all,
+#endif
+	
 };
 
 static struct android_usb_platform_data andusb_plat_bp = {
@@ -178,8 +181,11 @@ static struct android_usb_platform_data andusb_plat_bp = {
 	.serial_number = "0000",
 	.num_products = ARRAY_SIZE(bp_usb_products),
 	.products = bp_usb_products,
+#ifdef CONFIG_USB_MOT_ANDROID
 	.num_functions = ARRAY_SIZE(bp_usb_functions_all),
 	.functions = bp_usb_functions_all,
+#endif
+
 };
 
 static struct platform_device tegra_android_device = {

@@ -147,6 +147,7 @@ static struct platform_device ram_console_device = {
 	.num_resources	= ARRAY_SIZE(ram_console_resources),
 	.resource	= ram_console_resources,
 };
+#if 0
 #ifdef CONFIG_MACH_MOT
 void __init tegra_ram_console_debug_reserve(unsigned long ram_console_size)
 {
@@ -180,6 +181,7 @@ void __init tegra_ram_console_debug_init(void)
 		pr_err("%s: ram console registration failed (%d)!\n", __func__, err);
 	}
 }
+#endif
 #endif
 
 void __init tegra_common_init(void)

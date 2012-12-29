@@ -337,6 +337,7 @@ static void tegra_start_next_tx(struct tegra_uart_port *t)
 	UART_TRACE(&t->uport, UART_TRACE_LEVEL_CONTROL,
 			"+%s %lu %d\n", __func__, count, t->tx_in_progress);
 #ifdef CONFIG_MACH_MOT
+#ifdef CONFIG_MDM_CTRL
 	if (tx_log_enable) {
 		char log_buf[30];
 		TX_LOG_LEN -= snprintf(TX_LOG_PTR, TX_LOG_LEN,
@@ -345,6 +346,7 @@ static void tegra_start_next_tx(struct tegra_uart_port *t)
 		                       (uart_readb(t, UART_MSR) & UART_MSR_CTS) == UART_MSR_CTS,
 		                       mdm_ctrl_get_bp_status());
 	}
+#endif
 #endif
 	if (count == 0) {
 #ifdef CONFIG_MACH_MOT
@@ -385,12 +387,14 @@ static void tegra_start_next_tx(struct tegra_uart_port *t)
 		tegra_start_dma_tx(t, count);
 
 #ifdef CONFIG_MACH_MOT
+#ifdef CONFIG_MDM_CTRL
 	/*	save bp status and tx_jiffies for tx_timeout analysis
 		and clear tx_wake_jiffies to we can detect when wake_peer
 		does not run
 	*/
 	bp_status = mdm_ctrl_get_bp_status();
 	tx_jiffies = jiffies;
+#endif
 #endif
 
 out:
@@ -922,6 +926,7 @@ static void tegra_stop_rx(struct uart_port *u)
 }
 
 #ifdef CONFIG_MACH_MOT
+#ifdef CONFIG_MDM_CTRL
 static void tegra_wake_peer(struct uart_port *uport)
 {
 	struct tegra_uart_port *t;
@@ -1107,6 +1112,7 @@ static void tegra_uart_handle_peer_shutdown(void *context)
 	t->uart_peer_is_dead = true;
 	disable_irq_nosync(t->uart_irq);
 }
+#endif
 #endif /* CONFIG_MACH_MOT */
 
 static void tegra_uart_hw_deinit(struct tegra_uart_port *t)
@@ -1117,12 +1123,14 @@ static void tegra_uart_hw_deinit(struct tegra_uart_port *t)
 	uart_writeb(t, 0, UART_IER);
 
 #ifdef CONFIG_MACH_MOT
+#ifdef CONFIG_MDM_CTRL
 	/* config uart flow control gpios */
 	if (t->uart_ipc){
 		UART_TRACE(&t->uport, UART_TRACE_LEVEL_CONTROL,
 			"deconfig GPIOs for IPC on UART line=%d\n", t->uport.line );
 		tegra_uart_deconfig_gpio(t);
 	}
+#endif
 #endif
 	udelay(200);
 
@@ -1274,6 +1282,7 @@ static int tegra_uart_hw_init(struct tegra_uart_port *t)
 	uart_writeb(t, ier, UART_IER);
 
 #ifdef CONFIG_MACH_MOT
+#ifdef CONFIG_MDM_CTRL
 	/* config ipc uart flow control gpios */
 	if (t->uart_ipc){
 		UART_TRACE(&t->uport, UART_TRACE_LEVEL_CONTROL,
@@ -1282,6 +1291,7 @@ static int tegra_uart_hw_init(struct tegra_uart_port *t)
 	} else
 		UART_TRACE(&t->uport, UART_TRACE_LEVEL_CONTROL,
 			"IGNORE config GPIOs for line=%d\n", t->uport.line );
+#endif
 #endif
 	t->uart_state = TEGRA_UART_OPENED;
 	UART_TRACE(&t->uport, UART_TRACE_LEVEL_CONTROL, "-tegra_uart_hw_init\n");
@@ -1332,9 +1342,11 @@ static void tegra_tx_timeout(unsigned long data)
 {
 	unsigned char mcr, msr, lsr;
 #ifdef CONFIG_MACH_MOT
+#ifdef CONFIG_MDM_CTRL
 	struct timespec now;
 	struct timespec uptime;
 	struct rtc_time rtc_timestamp;
+#endif
 #endif
 	struct tegra_uart_port *t;
 	t = (struct tegra_uart_port *)data;
@@ -1345,6 +1357,7 @@ static void tegra_tx_timeout(unsigned long data)
 	printk("%s: MSR=0x%02x MCR=0x%02x LSR=0x%02x\n", __func__, msr, mcr, lsr);
 
 #ifdef CONFIG_MACH_MOT
+#ifdef CONFIG_MDM_CTRL
 	if (re_wake && t->is_ipc_uart_configured)
 	{
 		/* 	We got here 200ms after filling Tx FIFO.
@@ -1406,6 +1419,7 @@ static void tegra_tx_timeout(unsigned long data)
 		pr_warning("%s", tx_log[tx_log_idx]);
 		pr_warning("***\n");
 	}
+#endif
 #endif
 }
 
@@ -1831,7 +1845,9 @@ static struct uart_ops tegra_uart_ops = {
 	.request_port	= tegra_request_port,
 	.release_port	= tegra_release_port,
 #ifdef CONFIG_MACH_MOT
+#ifdef CONFIG_MDM_CTRL
 	.wake_peer	= tegra_wake_peer,
+#endif
 #endif
 };
 

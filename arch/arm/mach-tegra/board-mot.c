@@ -469,15 +469,17 @@ static void __init tegra_mot_init(void)
 	tegra_uart_platform[UART_IPC_OLYMPUS].uart_ipc = 1;
 	tegra_uart_platform[UART_IPC_OLYMPUS].uart_wake_host = TEGRA_GPIO_PA0;
 	tegra_uart_platform[UART_IPC_OLYMPUS].uart_wake_request = TEGRA_GPIO_PF1;
+#ifdef CONFIG_MDM_CTRL
 	tegra_uart_platform[UART_IPC_OLYMPUS].peer_register = mot_mdm_ctrl_peer_register;
-
+#endif
+#ifdef CONFIG_BOOTINFO
 	if( (bi_powerup_reason() & PWRUP_FACTORY_CABLE) &&
 	    (bi_powerup_reason() != PWRUP_INVALID) ){
 #ifdef NEED_FACT_BUSY_HINT
 		FactoryBusyHint(); //factory workaround no longer needed
 #endif
 	}
-
+#endif
 /*	mot_modem_init();*/
 
 	(void) platform_driver_register(&cpcap_usb_connected_driver);
@@ -488,12 +490,17 @@ static void __init tegra_mot_init(void)
 	mot_nvodmcam_init();*/
 
 	printk("%s: registering i2c devices...\n", __func__);
-
+#ifdef CONFIG_BOOTINFO
 	if(!(bi_powerup_reason() & PWRUP_BAREBOARD)) {
 		printk("bus 0: %d devices\n", ARRAY_SIZE(tegra_i2c_bus0_board_info));
 		i2c_register_board_info(0, tegra_i2c_bus0_board_info, 
 								ARRAY_SIZE(tegra_i2c_bus0_board_info));
 	}
+#else 
+	printk("bus 0: %d devices\n", ARRAY_SIZE(tegra_i2c_bus0_board_info));
+		i2c_register_board_info(0, tegra_i2c_bus0_board_info, 
+								ARRAY_SIZE(tegra_i2c_bus0_board_info));
+#endif
 	printk("bus 3: %d devices\n", ARRAY_SIZE(tegra_i2c_bus3_board_info));
 	i2c_register_board_info(3, tegra_i2c_bus3_board_info, 
 							ARRAY_SIZE(tegra_i2c_bus3_board_info));
@@ -555,8 +562,10 @@ static void __init mot_fixup(struct machine_desc *desc, struct tag *tags,
 		switch (t->hdr.tag) {
 		case ATAG_WLAN_MAC:        // 57464d41 parsed in board-mot-wlan.c
 		case ATAG_BLDEBUG:         // 41000811 same, in board-mot-misc.c
+#ifdef CONFIG_BOOTINFO
 		case ATAG_POWERUP_REASON:  // F1000401 ex: 0x4000, parsed after... ignore
 			break;
+#endif
 		case ATAG_CORE:     // 54410001
 			printk("%s: atag_core hdr.size=%d\n", __func__, t->hdr.size);
 			break;

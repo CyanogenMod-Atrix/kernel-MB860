@@ -208,7 +208,9 @@ static struct bu52014hfv_platform_data bu52014hfv_platform_data = {
 	.docked_south_gpio = TEGRA_HF_SOUTH_GPIO,
 	.kickstand_gpio = TEGRA_HF_KICKSTAND_GPIO,
 	.north_is_desk = 1,
+#ifdef CONFIG_MFD_CPCAP
 	.set_switch_func = cpcap_set_dock_switch,
+#endif
 };
 
 
@@ -585,10 +587,13 @@ void __init mot_sensors_init(void)
 	tegra_akm8975_init();
 
 	tegra_vibrator_init();
+#ifdef CONFIG_BOOTINFO
 	if(!(bi_powerup_reason() & PWRUP_BAREBOARD)) {
 		isl29030_init();
 	}
-
+#else 
+	isl29030_init();
+#endif
 	platform_add_devices(tegra_sensors, ARRAY_SIZE(tegra_sensors));
 
         aes1750_spi_device.irq = gpio_to_irq(aes1750_interrupt);

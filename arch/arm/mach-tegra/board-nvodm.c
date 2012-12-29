@@ -786,7 +786,7 @@ static void __init tegra_setup_hcd(void)
    	};
 
 	printk(KERN_INFO "pICS_%s: Starting...",__func__);
-#ifdef CONFIG_MACH_MOT
+#ifdef CONFIG_USB_TEGRA_OTG
 	tegra_otg_platform.usb_property = &Usb1Property;
 	platform_device_register(&tegra_otg);
 #endif

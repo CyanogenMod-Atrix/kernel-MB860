@@ -50,24 +50,29 @@ void mot_system_power_off(void)
 	/* If there's external power, let's restart instead ...
 	   except for the case when phone was powered on with factory cable
 	   and thus has to stay powered off after Turn-Off TCMD INKVSSW-994 */
+#ifdef CONFIG_REGULATOR_CPCAP
+#ifdef CONFIG_BOOTINFO
 	if (cpcap_misc_is_ext_power() &&
 	   !((bi_powerup_reason() & PWRUP_FACTORY_CABLE) &&
 	     (bi_powerup_reason() != PWRUP_INVALID)) )
+#else
+	if (cpcap_misc_is_ext_power())
+#endif
 	{
 		printk("External power detected- rebooting\r\n");
 		cpcap_misc_clear_power_handoff_info();
 		tegra_machine_restart(0,"");
 		while(1);
 	}
-
+#endif
 	printk(KERN_ERR "%s(): Powering down system\n", __func__);
 
 	/* Disable RTC alarms to prevent unwanted powerups */
 	class_for_each_device(rtc_class, NULL, NULL, disable_rtc_alarms);
-
+#ifdef CONFIG_REGULATOR_CPCAP
 	/* Disable powercut detection before power off */
 	cpcap_disable_powercut();
-
+#endif
 	/* We need to set the WDI bit low to power down normally */
 	if (HWREV_TYPE_IS_PORTABLE(system_rev) &&
 	    HWREV_REV(system_rev) >= HWREV_REV_1 &&
@@ -109,13 +114,16 @@ static int is_olympus_ge_p3(struct cpcap_device *cpcap)
 enum cpcap_revision cpcap_get_revision(struct cpcap_device *cpcap)
 {
 	unsigned short value;
-
+#ifdef CONFIG_MFD_CPCAP
 	/* Code taken from drivers/mfd/cpcap_core.c, since the revision value
 	   is not initialized until after the registers are initialized, which
 	   will happen after the trgra_cpcap_spi_init table is used. */
 	(void)cpcap_regacc_read(cpcap, CPCAP_REG_VERSC1, &value);
 	return (enum cpcap_revision)(((value >> 3) & 0x0007) |
 						((value << 3) & 0x0038));
+#else 
+	return 0;
+#endif
 }
 
 int is_cpcap_eq_3_1(struct cpcap_device *cpcap)
@@ -890,14 +898,18 @@ try_f7:
 #ifdef CONFIG_USB_TEGRA_OTG
 		tegra_otg_set_mode(0);
 #endif
+#ifdef CONFIG_USB_MOT_ANDROID
 		android_usb_set_connected(1, pdata->accy);
+#endif
 	}
 	if(pdata->accy == CPCAP_ACCY_USB_DEVICE) {
 #ifdef CONFIG_USB_TEGRA_OTG
 		tegra_otg_set_mode(1);
 #endif
 	}
+#ifdef CONFIG_MDM_CTRL
 	mdm_ctrl_set_usb_ipc(true);
+#endif
 
 	return 0;
 }
@@ -908,8 +920,9 @@ static int cpcap_usb_connected_remove(struct platform_device *pdev)
 	struct cpcap_accy_platform_data *pdata = pdev->dev.platform_data;
 
 	int nr_gpio;
-
+#ifdef CONFIG_MDM_CTRL
 	mdm_ctrl_set_usb_ipc(false);
+#endif
 #if 0
 	/* Configure CPCAP-AP20 USB Mux to CPCAP */
 	NvOdmGpioSetState(data->h_gpio, data->h_pin, 0x0);
@@ -928,9 +941,10 @@ static int cpcap_usb_connected_remove(struct platform_device *pdev)
 	gpio_data[nr_gpio].alloc = false;*/
 	
 	tegra_gpio_disable(nr_gpio);
-
+#ifdef CONFIG_USB_MOT_ANDROID
 	if((pdata->accy == CPCAP_ACCY_USB) || (pdata->accy == CPCAP_ACCY_FACTORY))
 		android_usb_set_connected(0, pdata->accy);
+#endif
 
 #ifdef CONFIG_USB_TEGRA_OTG
 	tegra_otg_set_mode(2);

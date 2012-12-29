@@ -213,8 +213,9 @@ static int __init parse_tag_motorola(const struct tag *tag)
     bootloader_ver_minor = moto_tag->bl_ver_minor;
     uboot_ver_major = moto_tag->uboot_ver_major;
     uboot_ver_minor = moto_tag->uboot_ver_minor;
+#ifdef CONFIG_BOOTINFO
     bi_set_cid_recover_boot(moto_tag->cid_suspend_boot);
-
+#endif
     pr_info("%s: bootloader v%d.%d\n", __func__, bootloader_ver_major, bootloader_ver_minor);
     pr_info("%s: uboot v%d.%d\n", __func__, uboot_ver_major, uboot_ver_minor);
     pr_info("%s: panel_size: 0x%x\n", __func__, s_MotorolaDispInfo);

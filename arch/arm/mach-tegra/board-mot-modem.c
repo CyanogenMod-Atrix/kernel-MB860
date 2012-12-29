@@ -266,7 +266,9 @@ static int __init mot_mdm_ctrl_init(void)
 struct mdm6600_spi_platform_data mdm6600_spi_platform_data = {
 	.gpio_mrdy = MDM6600_HOST_WAKE_GPIO,
 	.gpio_srdy = MDM6600_PEER_WAKE_GPIO,
+#ifdef CONFIG_MDM_CTRL
 	.peer_register = mot_mdm_ctrl_peer_register,
+#endif
 };
 
 struct spi_slave_board_info tegra_spi_slave_devices[] __initdata = {
