@@ -27,13 +27,13 @@
 #include "nvodm_query.h"
 #include "nvrm_drf.h"
 
-#include "subboards/nvodm_query_discovery_e888_addresses.h"
-#include "subboards/nvodm_query_discovery_e906_addresses.h"
-#include "subboards/nvodm_query_discovery_e911_addresses.h"
-#include "subboards/nvodm_query_discovery_e936_addresses.h"
-#include "subboards/nvodm_query_discovery_e951_addresses.h"
+//#include "subboards/nvodm_query_discovery_e888_addresses.h"
+//#include "subboards/nvodm_query_discovery_e906_addresses.h"
+//#include "subboards/nvodm_query_discovery_e911_addresses.h"
+//#include "subboards/nvodm_query_discovery_e936_addresses.h"
+//#include "subboards/nvodm_query_discovery_e951_addresses.h"
 #include "subboards/nvodm_query_discovery_e1116_addresses.h"
-#include "subboards/nvodm_query_discovery_e1120_addresses.h"
+//#include "subboards/nvodm_query_discovery_e1120_addresses.h"
 #include "subboards/nvodm_query_discovery_e1129_addresses.h"
 //#include "subboards/nvodm_query_discovery_e1215_addresses.h" // enable with accelerometer bring-up (Voyager)
 #include "subboards/nvodm_query_discovery_hdmi_addresses.h"
@@ -43,13 +43,13 @@
 
 static NvOdmPeripheralConnectivity s_Peripherals_Default[] =
 {
-#include "subboards/nvodm_query_discovery_e888_peripherals.h"
-#include "subboards/nvodm_query_discovery_e906_peripherals.h"
-#include "subboards/nvodm_query_discovery_e911_peripherals.h"
-#include "subboards/nvodm_query_discovery_e936_peripherals.h"
-#include "subboards/nvodm_query_discovery_e951_peripherals.h"
+//#include "subboards/nvodm_query_discovery_e888_peripherals.h"
+//#include "subboards/nvodm_query_discovery_e906_peripherals.h"
+//#include "subboards/nvodm_query_discovery_e911_peripherals.h"
+//#include "subboards/nvodm_query_discovery_e936_peripherals.h"
+//#include "subboards/nvodm_query_discovery_e951_peripherals.h"
 #include "subboards/nvodm_query_discovery_e1116_peripherals.h"
-#include "subboards/nvodm_query_discovery_e1120_peripherals.h"
+//#include "subboards/nvodm_query_discovery_e1120_peripherals.h"
 #include "subboards/nvodm_query_discovery_e1129_peripherals.h"
 //#include "subboards/nvodm_query_discovery_e1215_peripherals.h" // enable with accelerometer bring-up (Voyager)
 #include "subboards/nvodm_query_discovery_hdmi_peripherals.h"

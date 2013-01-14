@@ -790,7 +790,7 @@ struct cpcap_device {
 	void			*ucdata;
 	void			*accydata;
 	void			(*h2w_new_state)(int);
-	int				spdif_gpio;
+	int			spdif_gpio;
 };
 
 static inline void cpcap_set_keydata(struct cpcap_device *cpcap, void *data)

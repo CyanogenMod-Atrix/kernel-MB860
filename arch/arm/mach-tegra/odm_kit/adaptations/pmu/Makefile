@@ -8,13 +8,13 @@ ccflags-y += -DNV_DEBUG=0
 endif
 
 ccflags-y += -Iarch/arm/mach-tegra/odm_kit/adaptations/pmu
-ccflags-y += -Iarch/arm/mach-tegra/odm_kit/adaptations/pmu/max8907b
-ccflags-y += -Iarch/arm/mach-tegra/odm_kit/adaptations/pmu/pcf50626
+#ccflags-y += -Iarch/arm/mach-tegra/odm_kit/adaptations/pmu/max8907b
+#ccflags-y += -Iarch/arm/mach-tegra/odm_kit/adaptations/pmu/pcf50626
 ccflags-y += -Iarch/arm/mach-tegra/odm_kit/adaptations/pmu/tps6586x
 ccflags-y += -Iarch/arm/mach-tegra/odm_kit/adaptations/pmu/cpcap
 
 obj-y += pmu_hal.o
-obj-y += max8907b/
-obj-y += pcf50626/
+#obj-y += max8907b/
+#obj-y += pcf50626/
 obj-y += tps6586x/
 obj-y += cpcap/

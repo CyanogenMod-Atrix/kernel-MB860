@@ -150,9 +150,9 @@ struct tag_nvidia_tegra {
 	__u32 bootarg_len;
 	char bootarg[1];
 };
-/*
+
 #if defined(CONFIG_MACH_MOT)
-*/
+
 #define ATAG_MOTOROLA 0x41000810
 
 #pragma pack(1)
@@ -179,9 +179,8 @@ struct tag_motorola {
 struct tag_wlan_mac {
 	__u8 addr[ATAG_WLAN_MAC_LEN];
 };
-/*
 #endif
-*/
+
 #define ATAG_BLDEBUG 0x41000811
 struct tag_bldebug {
 	__u16 ints1;

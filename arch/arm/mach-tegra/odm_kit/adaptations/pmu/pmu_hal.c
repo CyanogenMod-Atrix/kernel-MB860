@@ -22,14 +22,7 @@
 #include "pmu_hal.h"
 #include "nvodm_services.h"
 #include "tps6586x/nvodm_pmu_tps6586x.h"
-#ifdef CONFIG_MFD_CPCAP
 #include "cpcap/odm_regulator.h"
-#else
-#include "max8907b/max8907b.h"
-#include "max8907b/max8907b_rtc.h"
-#include "pcf50626/pcf50626.h"
-#include "pcf50626/pcf50626_rtc.h"
-#endif
 
 static NvOdmPmuDevice*
 GetPmuInstance(NvOdmPmuDeviceHandle hDevice)
@@ -42,7 +35,6 @@ GetPmuInstance(NvOdmPmuDeviceHandle hDevice)
         NvOdmOsMemset(&Pmu, 0, sizeof(Pmu));
         first = NV_FALSE;
 
-#ifdef CONFIG_MFD_CPCAP
         {
             Pmu.pfnSetup                  = RegulatorSetup;
             Pmu.pfnRelease                = RegulatorRelease;
@@ -63,78 +55,6 @@ GetPmuInstance(NvOdmPmuDeviceHandle hDevice)
             Pmu.Hal                       = NV_TRUE;  
             Pmu.Init                      = NV_FALSE;
         }
-#else
-        if (NvOdmPeripheralGetGuid(NV_ODM_GUID('t','p','s','6','5','8','6','x')))
-        {
-            //  fill in HAL functions here.
-            Pmu.Hal = NV_TRUE;
-            Pmu.pfnSetup = Tps6586xSetup;
-            Pmu.pfnRelease = Tps6586xRelease;
-            Pmu.pfnGetCaps = Tps6586xGetCapabilities;
-            Pmu.pfnGetVoltage = Tps6586xGetVoltage;
-            Pmu.pfnSetVoltage = Tps6586xSetVoltage;
-            Pmu.pfnGetAcLineStatus = Tps6586xGetAcLineStatus;
-            Pmu.pfnGetBatteryStatus = Tps6586xGetBatteryStatus;
-            Pmu.pfnGetBatteryData = Tps6586xGetBatteryData;
-            Pmu.pfnGetBatteryFullLifeTime = Tps6586xGetBatteryFullLifeTime;
-            Pmu.pfnGetBatteryChemistry = Tps6586xGetBatteryChemistry;
-            Pmu.pfnSetChargingCurrent = Tps6586xSetChargingCurrent;
-            Pmu.pfnInterruptHandler = Tps6586xInterruptHandler;
-            Pmu.pfnReadRtc = Tps6586xReadRtc;
-            Pmu.pfnWriteRtc = Tps6586xWriteRtc;
-            Pmu.pfnReadAlarm = Tps6586xReadAlarm;
-            Pmu.pfnWriteAlarm = Tps6586xWriteAlarm;
-            Pmu.pfnIsRtcInitialized = Tps6586xIsRtcInitialized;
-        }
-        else if (NvOdmPeripheralGetGuid(NV_ODM_GUID('p','c','f','_','p','m','u','0')))
-        {
-            
-            Pmu.pfnSetup                  = Pcf50626Setup;
-            Pmu.pfnRelease                = Pcf50626Release;
-            Pmu.pfnGetCaps                = Pcf50626GetCapabilities;
-            Pmu.pfnGetVoltage             = Pcf50626GetVoltage;
-            Pmu.pfnSetVoltage             = Pcf50626SetVoltage;
-            Pmu.pfnGetAcLineStatus        = Pcf50626GetAcLineStatus;
-            Pmu.pfnGetBatteryStatus       = Pcf50626GetBatteryStatus;
-            Pmu.pfnGetBatteryData         = Pcf50626GetBatteryData;
-            Pmu.pfnGetBatteryFullLifeTime = Pcf50626GetBatteryFullLifeTime;
-            Pmu.pfnGetBatteryChemistry    = Pcf50626GetBatteryChemistry;
-            Pmu.pfnSetChargingCurrent     = Pcf50626SetChargingCurrent;
-            Pmu.pfnInterruptHandler       = Pcf50626InterruptHandler;
-            Pmu.pfnReadRtc                = Pcf50626RtcCountRead;
-            Pmu.pfnWriteRtc               = Pcf50626RtcCountWrite;
-            Pmu.pfnReadAlarm              = NULL;
-            Pmu.pfnWriteAlarm             = NULL;
-            Pmu.pfnIsRtcInitialized       = Pcf50626IsRtcInitialized;
-            Pmu.pPrivate                  = NULL;            
-            Pmu.Hal                       = NV_TRUE;  
-            Pmu.Init                      = NV_FALSE;
-        }
-        else if (NvOdmPeripheralGetGuid(NV_ODM_GUID('m','a','x','8','9','0','7','b')))
-        {
-
-            Pmu.pfnSetup                  = Max8907bSetup;
-            Pmu.pfnRelease                = Max8907bRelease;
-            Pmu.pfnGetCaps                = Max8907bGetCapabilities;
-            Pmu.pfnGetVoltage             = Max8907bGetVoltage;
-            Pmu.pfnSetVoltage             = Max8907bSetVoltage;
-            Pmu.pfnGetAcLineStatus        = Max8907bGetAcLineStatus;
-            Pmu.pfnGetBatteryStatus       = Max8907bGetBatteryStatus;
-            Pmu.pfnGetBatteryData         = Max8907bGetBatteryData;
-            Pmu.pfnGetBatteryFullLifeTime = Max8907bGetBatteryFullLifeTime;
-            Pmu.pfnGetBatteryChemistry    = Max8907bGetBatteryChemistry;
-            Pmu.pfnSetChargingCurrent     = Max8907bSetChargingCurrent;
-            Pmu.pfnInterruptHandler       = Max8907bInterruptHandler;
-            Pmu.pfnReadRtc                = Max8907bRtcCountRead;
-            Pmu.pfnWriteRtc               = Max8907bRtcCountWrite;
-            Pmu.pfnReadAlarm              = NULL;
-            Pmu.pfnWriteAlarm             = NULL;
-            Pmu.pfnIsRtcInitialized       = Max8907bIsRtcInitialized;
-            Pmu.pPrivate                  = NULL;
-            Pmu.Hal                       = NV_TRUE;  
-            Pmu.Init                      = NV_FALSE;
-        }
-#endif
     }
 
 

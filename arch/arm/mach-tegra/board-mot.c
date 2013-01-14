@@ -15,6 +15,11 @@
  * GNU General Public License for more details.
  *
  */
+#include <linux/irq.h>
+#include <linux/interrupt.h>
+
+#include <mach/pinmux.h>
+#include <mach/suspend.h>
 
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -76,6 +81,42 @@
 #define PWRUP_FACTORY_CABLE         0x00000020 /* Bit 5  */
 #define PWRUP_INVALID               0xFFFFFFFF
 #define PWRUP_BAREBOARD             0x00100000 /* Bit 20 */
+
+#define GPIO_BANK(x)		((x) >> 5)
+#define GPIO_PORT(x)		(((x) >> 3) & 0x3)
+#define GPIO_BIT(x)		((x) & 0x7)
+
+#define GPIO_REG(x)		(IO_TO_VIRT(TEGRA_GPIO_BASE) +	\
+				 GPIO_BANK(x) * 0x80 +		\
+				 GPIO_PORT(x) * 4)
+
+#define GPIO_CNF(x)		(GPIO_REG(x) + 0x00)
+#define GPIO_OE(x)		(GPIO_REG(x) + 0x10)
+#define GPIO_OUT(x)		(GPIO_REG(x) + 0X20)
+#define GPIO_IN(x)		(GPIO_REG(x) + 0x30)
+#define GPIO_INT_STA(x)		(GPIO_REG(x) + 0x40)
+#define GPIO_INT_ENB(x)		(GPIO_REG(x) + 0x50)
+#define GPIO_INT_LVL(x)		(GPIO_REG(x) + 0x60)
+#define GPIO_INT_CLR(x)		(GPIO_REG(x) + 0x70)
+
+#define GPIO_MSK_CNF(x)		(GPIO_REG(x) + 0x800)
+#define GPIO_MSK_OE(x)		(GPIO_REG(x) + 0x810)
+#define GPIO_MSK_OUT(x)		(GPIO_REG(x) + 0X820)
+#define GPIO_MSK_INT_STA(x)	(GPIO_REG(x) + 0x840)
+#define GPIO_MSK_INT_ENB(x)	(GPIO_REG(x) + 0x850)
+#define GPIO_MSK_INT_LVL(x)	(GPIO_REG(x) + 0x860)
+
+#define GPIO_INT_LVL_MASK		0x010101
+#define GPIO_INT_LVL_EDGE_RISING	0x000101
+#define GPIO_INT_LVL_EDGE_FALLING	0x000100
+#define GPIO_INT_LVL_EDGE_BOTH		0x010100
+#define GPIO_INT_LVL_LEVEL_HIGH		0x000001
+#define GPIO_INT_LVL_LEVEL_LOW		0x000000
+
+static int tegra_gpio_compose(int bank, int port, int bit)
+{
+	return (bank << 5) | ((port & 0x3) << 3) | (bit & 0x7);
+}
 
 static char oly_unused_pins_p3[] = {
         TEGRA_GPIO_PO1,
@@ -438,16 +479,40 @@ static int config_unused_pins(char *pins, int num)
         return ret;
 }
 
+static void get_gpio_settings(void)
+{
+	unsigned long pmc_ctrl;
+	int i;
+	int j;
+
+	pmc_ctrl = readl(IO_ADDRESS(TEGRA_PMC_BASE));	
+	printk(KERN_INFO "pICS_%s: pmc_ctrl = 0x%lX...\n",__func__,pmc_ctrl);
+	
+	for (i = 0; i < 7; i++) {
+		for (j = 0; j < 4; j++) {
+			int gpio = tegra_gpio_compose(i, j, 0);
+			printk(KERN_INFO "pICS_%s: %d:%d %02x %02x %02x %02x %02x %02x %06x\n",__func__,
+			       i, j,
+			       __raw_readl(GPIO_CNF(gpio)),
+			       __raw_readl(GPIO_OE(gpio)),
+			       __raw_readl(GPIO_OUT(gpio)),
+			       __raw_readl(GPIO_IN(gpio)),
+			       __raw_readl(GPIO_INT_STA(gpio)),
+			       __raw_readl(GPIO_INT_ENB(gpio)),
+			       __raw_readl(GPIO_INT_LVL(gpio)));
+		}
+	}
+}
 
 static void __init tegra_mot_init(void)
 {
-	pinmux_show();
+	get_gpio_settings();
 	tegra_common_init();
-	pinmux_show();
+	get_gpio_settings();
 	tegra_setup_nvodm(true, true);
-	pinmux_show();
+	get_gpio_settings();
 	tegra_register_socdev();
-	pinmux_show();
+	get_gpio_settings();
 #if 0
 #ifdef CONFIG_APANIC_RAM
 	apanic_ram_init();
@@ -457,13 +522,13 @@ static void __init tegra_mot_init(void)
 #ifdef CONFIG_APANIC_MMC
 	apanic_mmc_init();
 #endif
-
+	get_gpio_settings();
 	mot_setup_power();
 /*	mot_setup_lights(&tegra_i2c_bus0_board_info[BACKLIGHT_DEV]);
 	mot_setup_touch(&tegra_i2c_bus0_board_info[TOUCHSCREEN_DEV]);*/
 /*	mot_sec_init();
 	mot_tcmd_init();*/
-
+	get_gpio_settings();
 	mot_setup_gadget();
 
 	tegra_uart_platform[UART_IPC_OLYMPUS].uart_ipc = 1;
@@ -545,8 +610,7 @@ static void __init tegra_mot_init(void)
 			config_unused_pins(oly_unused_pins_p3, ARRAY_SIZE(oly_unused_pins_p3));
 		}
 	}
-	pinmux_show();
-
+	get_gpio_settings();
 }
 
 static void __init mot_fixup(struct machine_desc *desc, struct tag *tags,

@@ -699,26 +699,26 @@ NvOdmQueryPinAttributes(const NvOdmPinAttrib** pPinAttributes)
 
 NvBool NvOdmQueryGetPmuProperty(NvOdmPmuProperty* pPmuProperty)
 {
-    pPmuProperty->IrqConnected = NV_FALSE;
+    pPmuProperty->IrqConnected = 0; /*NV_FALSE;*/
 
     pPmuProperty->PowerGoodCount = 0x0732;
-    pPmuProperty->IrqPolarity = NvOdmInterruptPolarity_Low;
+    pPmuProperty->IrqPolarity = 1; /*NvOdmInterruptPolarity_Low;*/
     
     // Not there yet, add it later ...
     //pPmuProperty->CpuPowerReqPolarity = ;
 
-    pPmuProperty->CorePowerReqPolarity = NvOdmCorePowerReqPolarity_High;
-    pPmuProperty->SysClockReqPolarity = NvOdmSysClockReqPolarity_High;
-    pPmuProperty->CombinedPowerReq = NV_FALSE;
+    pPmuProperty->CorePowerReqPolarity = 1; /*NvOdmCorePowerReqPolarity_High;*/
+    pPmuProperty->SysClockReqPolarity = 1; /*NvOdmSysClockReqPolarity_High;*/
+    pPmuProperty->CombinedPowerReq = 0; /*NV_FALSE;*/
 
     pPmuProperty->CpuPowerGoodUs = 800;
     pPmuProperty->AccuracyPercent = 3;
 
-    pPmuProperty->VCpuOTPOnWakeup = NV_FALSE;
+    pPmuProperty->VCpuOTPOnWakeup = 0; /*NV_FALSE;*/
 
     pPmuProperty->PowerOffCount = 0x1F;
     pPmuProperty->CpuPowerOffUs = 600;
-    return NV_TRUE;
+    return 1; /*NV_TRUE;*/
 }
 
 /**

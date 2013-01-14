@@ -30,6 +30,7 @@
  *
  */
 
+#include <linux/kernel.h>
 #include "nvrm_pmu.h"
 #include "nvodm_pmu.h"
 #include "nvassert.h"
@@ -144,12 +145,37 @@ static void PmuThreadTerminate(NvRmPmu* pPmu)
 
 /*****************************************************************************/
 
+NvBool tNvOdmQueryGetPmuProperty(NvOdmPmuProperty* pPmuProperty)
+{
+    pPmuProperty->IrqConnected = 0; /*NV_FALSE;*/
+
+    pPmuProperty->PowerGoodCount = 0x0732;
+    pPmuProperty->IrqPolarity = 1; /*NvOdmInterruptPolarity_Low;*/
+    
+    // Not there yet, add it later ...
+    //pPmuProperty->CpuPowerReqPolarity = ;
+
+    pPmuProperty->CorePowerReqPolarity = 1; /*NvOdmCorePowerReqPolarity_High;*/
+    pPmuProperty->SysClockReqPolarity = 1; /*NvOdmSysClockReqPolarity_High;*/
+    pPmuProperty->CombinedPowerReq = 0; /*NV_FALSE;*/
+
+    pPmuProperty->CpuPowerGoodUs = 800;
+    pPmuProperty->AccuracyPercent = 3;
+
+    pPmuProperty->VCpuOTPOnWakeup = 0; /*NV_FALSE;*/
+
+    pPmuProperty->PowerOffCount = 0x1F;
+    pPmuProperty->CpuPowerOffUs = 600;
+    return 1; /*NV_TRUE;*/
+}
+
 NvError NvRmPrivPmuInit(NvRmDeviceHandle hRmDevice)
 {
     NvError e;
     ExecPlatform env;
     NvOdmPmuProperty PmuProperty;
 
+    printk(KERN_INFO "pICS_%s: NV_ASSERT(hRmDevice);\n",__func__);
     NV_ASSERT(hRmDevice);
     env = NvRmPrivGetExecPlatform(hRmDevice);
 
@@ -166,11 +192,15 @@ NvError NvRmPrivPmuInit(NvRmDeviceHandle hRmDevice)
         NV_CHECK_ERROR_CLEANUP(NvOsMutexCreate(&s_Pmu.hMutex));
         NV_CHECK_ERROR_CLEANUP(NvOsSemaphoreCreate(&s_Pmu.hSemaphore, 0));
 
-        if (NvOdmQueryGetPmuProperty(&PmuProperty) && PmuProperty.IrqConnected)
+        if (tNvOdmQueryGetPmuProperty(&PmuProperty) && PmuProperty.IrqConnected)
         {
-            if (hRmDevice->ChipId.Id >= 0x20)
+		printk(KERN_INFO "pICS_%s: in if (tNvOdmQueryGetPmuProperty(&PmuProperty) && PmuProperty.IrqConnected)\n",__func__);
+		
+            if (hRmDevice->ChipId.Id >= 0x20) {
                 NvRmPrivAp20SetPmuIrqPolarity(
                     hRmDevice, PmuProperty.IrqPolarity);
+		printk(KERN_INFO "pICS_%s: hRmDevice->ChipId.Id >= 0x20\n",__func__);
+		}
             else
                 NV_ASSERT(PmuProperty.IrqPolarity ==
                           NvOdmInterruptPolarity_Low);

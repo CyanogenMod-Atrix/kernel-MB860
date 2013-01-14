@@ -16,6 +16,24 @@
  * 02111-1307, USA
  */
 
+#include <linux/init.h>
+#include <linux/irq.h>
+#include <linux/interrupt.h>
+#include <linux/delay.h>
+
+#include <linux/io.h>
+#include <linux/gpio.h>
+#include <linux/regulator/consumer.h>
+
+#include <mach/iomap.h>
+#include <mach/pinmux.h>
+#include <mach/suspend.h>
+
+#include <mach/nvrm_linux.h>
+#include "nvcommon.h"
+#include "nvrm_pmu.h"
+#include "nvodm_query_discovery.h"
+
 #include <linux/fs.h>
 #include <linux/miscdevice.h>
 #include <linux/leds-ld-cpcap.h>
@@ -31,6 +49,37 @@
 #ifdef CONFIG_BOOTINFO
 #include <asm/bootinfo.h>
 #endif
+
+#define GPIO_BANK(x)		((x) >> 5)
+#define GPIO_PORT(x)		(((x) >> 3) & 0x3)
+#define GPIO_BIT(x)		((x) & 0x7)
+
+#define GPIO_REG(x)		(IO_TO_VIRT(TEGRA_GPIO_BASE) +	\
+				 GPIO_BANK(x) * 0x80 +		\
+				 GPIO_PORT(x) * 4)
+
+#define GPIO_CNF(x)		(GPIO_REG(x) + 0x00)
+#define GPIO_OE(x)		(GPIO_REG(x) + 0x10)
+#define GPIO_OUT(x)		(GPIO_REG(x) + 0X20)
+#define GPIO_IN(x)		(GPIO_REG(x) + 0x30)
+#define GPIO_INT_STA(x)		(GPIO_REG(x) + 0x40)
+#define GPIO_INT_ENB(x)		(GPIO_REG(x) + 0x50)
+#define GPIO_INT_LVL(x)		(GPIO_REG(x) + 0x60)
+#define GPIO_INT_CLR(x)		(GPIO_REG(x) + 0x70)
+
+#define GPIO_MSK_CNF(x)		(GPIO_REG(x) + 0x800)
+#define GPIO_MSK_OE(x)		(GPIO_REG(x) + 0x810)
+#define GPIO_MSK_OUT(x)		(GPIO_REG(x) + 0X820)
+#define GPIO_MSK_INT_STA(x)	(GPIO_REG(x) + 0x840)
+#define GPIO_MSK_INT_ENB(x)	(GPIO_REG(x) + 0x850)
+#define GPIO_MSK_INT_LVL(x)	(GPIO_REG(x) + 0x860)
+
+#define GPIO_INT_LVL_MASK		0x010101
+#define GPIO_INT_LVL_EDGE_RISING	0x000101
+#define GPIO_INT_LVL_EDGE_FALLING	0x000100
+#define GPIO_INT_LVL_EDGE_BOTH		0x010100
+#define GPIO_INT_LVL_LEVEL_HIGH		0x000001
+#define GPIO_INT_LVL_LEVEL_LOW		0x000000
 
 extern void NvRmPrivPostPmuInit(void);
 
@@ -412,13 +461,19 @@ static void cpcap_vendor_read(struct cpcap_device *cpcap)
 						((value << 3) & 0x0038));
 }
 
+static int tegra_gpio_compose(int bank, int port, int bit)
+{
+	return (bank << 5) | ((port & 0x3) << 3) | (bit & 0x7);
+}
 
 static int __devinit cpcap_probe(struct spi_device *spi)
 {
 	int retval = -EINVAL;
+	unsigned long pmc_ctrl;
 	struct cpcap_device *cpcap;
 	struct cpcap_platform_data *data;
 	int i;
+	int j;
 
 	cpcap = kzalloc(sizeof(*cpcap), GFP_KERNEL);
 	if (cpcap == NULL)
@@ -490,8 +545,45 @@ static int __devinit cpcap_probe(struct spi_device *spi)
 			continue;
 		platform_device_add(cpcap->regulator_pdev[i]);
 	}
+	
+	pmc_ctrl = readl(IO_ADDRESS(TEGRA_PMC_BASE));	
+	printk(KERN_INFO "pICS_%s: pmc_ctrl = 0x%lX...\n",__func__,pmc_ctrl);
+	
+	for (i = 0; i < 7; i++) {
+		for (j = 0; j < 4; j++) {
+			int gpio = tegra_gpio_compose(i, j, 0);
+			printk(KERN_INFO "pICS_%s: %d:%d %02x %02x %02x %02x %02x %02x %06x\n",__func__,
+			       i, j,
+			       __raw_readl(GPIO_CNF(gpio)),
+			       __raw_readl(GPIO_OE(gpio)),
+			       __raw_readl(GPIO_OUT(gpio)),
+			       __raw_readl(GPIO_IN(gpio)),
+			       __raw_readl(GPIO_INT_STA(gpio)),
+			       __raw_readl(GPIO_INT_ENB(gpio)),
+			       __raw_readl(GPIO_INT_LVL(gpio)));
+		}
+	}
 
         NvRmPrivPostPmuInit();
+
+	pmc_ctrl = readl(IO_ADDRESS(TEGRA_PMC_BASE));	
+	printk(KERN_INFO "pICS_%s: after PmuInit, pmc_ctrl = 0x%lX...\n",__func__,pmc_ctrl);
+
+	for (i = 0; i < 7; i++) {
+		for (j = 0; j < 4; j++) {
+			int gpio = tegra_gpio_compose(i, j, 0);
+			printk(KERN_INFO "pICS_%s: %d:%d %02x %02x %02x %02x %02x %02x %06x\n",__func__,
+			       i, j,
+			       __raw_readl(GPIO_CNF(gpio)),
+			       __raw_readl(GPIO_OE(gpio)),
+			       __raw_readl(GPIO_OUT(gpio)),
+			       __raw_readl(GPIO_IN(gpio)),
+			       __raw_readl(GPIO_INT_STA(gpio)),
+			       __raw_readl(GPIO_INT_ENB(gpio)),
+			       __raw_readl(GPIO_INT_LVL(gpio)));
+		}
+	}
+
 
 	platform_add_devices(cpcap_devices, ARRAY_SIZE(cpcap_devices));
 
